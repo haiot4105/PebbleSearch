@@ -62,7 +62,7 @@ class Closed:
         # return (item.i, item.j, item.speed, item.orientation) in self.elements.keys()
 
 
-def astar(graph, start_id, goal_id, occupied):
+def astar(graph, start_id, goal_id, blocked):
     OPEN = Open()
     CLOSED = Closed()
     start_node = Node(start_id, 0, graph.get_euclidian_distance(start_id, goal_id))
@@ -77,7 +77,7 @@ def astar(graph, start_id, goal_id, occupied):
         
         for neighbour_id in graph.get_neighbours(current_node.v_id):
             new_node = Node(neighbour_id)
-            if not CLOSED.was_expanded(new_node) and neighbour_id not in occupied:
+            if not CLOSED.was_expanded(new_node) and neighbour_id not in blocked:
                 new_node.g = current_node.g + graph.get_euclidian_distance(current_node.v_id, neighbour_id)
                 new_node.h = graph.get_euclidian_distance(neighbour_id, goal_id)
                 new_node.F = new_node.g + new_node.h
@@ -87,5 +87,8 @@ def astar(graph, start_id, goal_id, occupied):
     return False, None
 
 
-def shortest_path(graph, start_id, goal_id, occupied):
+def shortest_path(graph, start_id, goal_id, blocked):
+    raise NotImplementedError
+
+def path_to_closest_empty_vertex(graph, start_id, empty, blocked):
     raise NotImplementedError
