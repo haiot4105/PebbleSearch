@@ -7,7 +7,7 @@ import time
 fig = plt.figure()
 fig.set_dpi(100)
 fig.set_size_inches(7, 7)
-ax = plt.axes(xlim=(-2, 7), ylim=(-2, 7))
+ax = plt.axes(xlim=(-6, 6), ylim=(-6, 6))
 anim = None
 
 # def draw_graph(graph):
@@ -109,6 +109,6 @@ def draw(graph, starts, solution):
                                 init_func=init, 
                                 frames=None, 
                                 interval=5,
-                                blit=True,
+                                blit=False,
                                 repeat=False )
     plt.show()

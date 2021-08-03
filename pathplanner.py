@@ -69,7 +69,6 @@ def search(graph, start_id, goal_id, blocked, empty = None):
                 return True, empty_result # TODO check minimum instantly 
         
         for neighbour_id in graph.get_neighbours(current_node.v_id):
-            print("\t", current_node.v_id, neighbour_id)
             new_node = Node( neighbour_id)
             if not CLOSED.was_expanded(new_node) and neighbour_id not in blocked:
                 new_node.g = current_node.g + graph.get_euclidian_distance(current_node.v_id, neighbour_id)
@@ -92,15 +91,11 @@ def shortest_path(graph, start_id, goal_id, blocked):
     return True, make_path(goal_node)
 
 def path_to_closest_empty_vertex(graph, start_id, empty, blocked):
-    print("\npathplanning empty start")
     new_empty = empty.copy()
-    print("\t", start_id, empty, blocked)
     success, empty_nodes = search(graph, start_id, None, blocked, new_empty)
     if not success:
-        print("pathplanning empty end\n")
         return False, None
     node_empty_min = min(empty_nodes, key=lambda x : x.g)
-    print("pathplanning empty end\n")
     return True, make_path(node_empty_min)
     
 def make_path(node):

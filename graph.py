@@ -8,10 +8,13 @@ class Graph:
         self.neighbours = dict()
         self.positions = dict()
         self.edges = set()
+        self.degreegeq3 = set()
 
     def add_vertex(self, v_id, position, neighbours):
         self.verticies.add(v_id)
         self.neighbours.update({v_id : neighbours})
+        if len(neighbours) >= 3:
+            self.degreegeq3.add(v_id)
         for n_id in neighbours:
             if ((v_id, n_id) not in self.edges) and ((n_id, v_id) not in self.edges):
                 self.edges.add((v_id, n_id))
@@ -35,6 +38,9 @@ class Graph:
 
     def __iter__(self):
         return iter(self.verticies)
+
+    def get_verticies_degree_geq_3(self):
+        return self.degreegeq3
 
   
 class Node:
