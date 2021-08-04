@@ -4,14 +4,14 @@ class Graph:
     
     def __init__(self):
         self.curr_id = 0
-        self.verticies = set()
+        self.vertices = set()
         self.neighbours = dict()
         self.positions = dict()
         self.edges = set()
         self.degreegeq3 = set()
 
     def add_vertex(self, v_id, position, neighbours):
-        self.verticies.add(v_id)
+        self.vertices.add(v_id)
         self.neighbours.update({v_id : neighbours})
         if len(neighbours) >= 3:
             self.degreegeq3.add(v_id)
@@ -24,8 +24,8 @@ class Graph:
     def get_vertex_position(self, v_id):
         return self.positions[v_id]
 
-    def get_verticies(self):
-        return self.verticies
+    def get_vertices(self):
+        return self.vertices
 
     def get_edges(self):
         return self.edges
@@ -37,9 +37,9 @@ class Graph:
         return self.neighbours[v_id]
 
     def __iter__(self):
-        return iter(self.verticies)
+        return iter(self.vertices)
 
-    def get_verticies_degree_geq_3(self):
+    def get_vertices_degree_geq_3(self):
         return self.degreegeq3
 
   
