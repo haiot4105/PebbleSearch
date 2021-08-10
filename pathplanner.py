@@ -48,6 +48,7 @@ class Closed:
 
 
 def search(graph, start_id, goal_id, blocked, empty = None):
+    # print("(shortest_path) Start. Vertices: ", start_id, goal_id)
     OPEN = Open()
     CLOSED = Closed()
     start_node = Node(start_id, 0, graph.get_euclidian_distance(start_id, goal_id) if empty is None else 0)
@@ -56,6 +57,7 @@ def search(graph, start_id, goal_id, blocked, empty = None):
 
     while not OPEN.is_empty():
         current_node = OPEN.get_best_node()
+        # print("curr:", current_node.v_id)
         CLOSED.add_node(current_node)
         
         if empty is None:
@@ -70,7 +72,9 @@ def search(graph, start_id, goal_id, blocked, empty = None):
         
         for neighbour_id in graph.get_neighbours(current_node.v_id):
             new_node = Node( neighbour_id)
-            if not CLOSED.was_expanded(new_node) and neighbour_id not in blocked:
+            if neighbour_id in blocked:
+                continue
+            if (not CLOSED.was_expanded(new_node)) and (neighbour_id not in blocked):
                 new_node.g = current_node.g + graph.get_euclidian_distance(current_node.v_id, neighbour_id)
                 new_node.h = graph.get_euclidian_distance(neighbour_id, goal_id) if empty is None else 0
                 new_node.F = new_node.g + new_node.h
@@ -102,6 +106,7 @@ def make_path(node):
     current = node
     path = []
     while current.parent:
+        
         path.append(current.v_id)
         current = current.parent
     path.append(current.v_id)

@@ -26,6 +26,20 @@ anim = None
 
 curr_step = 0
 curr_agent = 0
+curr_step = 0
+curr_substep = 0
+
+curr_agent = 0
+pos_from = 0
+pos_to = 0
+
+length = 0
+substeps = 0
+x_segm = 0
+y_segm = 0
+curr_segm = 0
+dt = 0.1
+patch = 0
 
 def draw(graph, starts, solution):
     global anim
@@ -35,22 +49,33 @@ def draw(graph, starts, solution):
     global pos_to
     global length
     global dt
-    global dp
+    global curr_substep
+    global curr_segm
     global patch
 
+    if solution is None:
+        solution = [(0, starts[0], starts[0])]
     patches = dict()
     for agent, start in starts.items():
-        print(agent, start)
         patches[agent] = plt.Circle(graph.get_vertex_position(start), 0.3, fc='r', zorder=10)
 
     curr_step = 0
+    curr_substep = 0
+    
     curr_agent = solution[curr_step][0]
     pos_from = graph.get_vertex_position(solution[curr_step][1]) 
     pos_to = graph.get_vertex_position(solution[curr_step][2])
-
+    
     length = np.linalg.norm(pos_to - pos_from)
+    substeps = int(length/dt)
+    x_segm = np.linspace(start=pos_from[0], stop=pos_to[0], num=substeps)
+    y_segm = np.linspace(start=pos_from[1], stop=pos_to[1], num=substeps)
+    curr_segm = np.vstack((x_segm, y_segm)).T
     dt = 0.1
-    dp = (pos_to - pos_from)/length * dt
+
+    # length = np.linalg.norm(pos_to - pos_from)
+    
+    # dp = (pos_to - pos_from)/length * dt
 
 
     patch = patches[curr_agent]
@@ -60,6 +85,7 @@ def draw(graph, starts, solution):
         for v in graph:
             circle = plt.Circle(graph.get_vertex_position(v), 0.15, color='b')
             ax.add_patch(circle)
+            ax.text(*graph.get_vertex_position(v), str(v), fontweight='bold',zorder=10)
 
         for e in graph.get_edges():
             p1, p2 = graph.get_vertex_position(e[0]), graph.get_vertex_position(e[1])
@@ -75,32 +101,41 @@ def draw(graph, starts, solution):
     # init()
     def animate(i):
         global curr_step
+        global curr_substep
+        global curr_segm
         global curr_agent
         global pos_from
         global pos_to
-        global length
         global dt
-        global dp
         global patch
 
-        print(curr_agent)
         pos_to = graph.get_vertex_position(solution[curr_step][2])
         patch = patches[curr_agent]
         x, y = patch.center
-        if np.linalg.norm(pos_to - np.array([x, y])) > dt:
-            x += dp[0]
-            y += dp[1]
+        if curr_substep < len(curr_segm):
+            x = curr_segm[curr_substep, 0]
+            y = curr_segm[curr_substep, 1]
             patch.center = (x, y)
+            curr_substep += 1
         else:
             if curr_step + 1 < len(solution):
                 curr_step += 1
+            else:
+                curr_substep = len(curr_segm)-1
+                
             curr_agent = solution[curr_step][0]
+            curr_substep = 0
+            
+            print(solution[curr_step][1], solution[curr_step][2], solution[curr_step][2] in graph.get_neighbours(solution[curr_step][1]))
+
             pos_from = graph.get_vertex_position(solution[curr_step][1]) 
             pos_to = graph.get_vertex_position(solution[curr_step][2])
 
             length = np.linalg.norm(pos_to - pos_from)
-            dt = 0.1
-            dp = (pos_to - pos_from)/length * dt
+            substeps = int(length/dt)
+            x_segm = np.linspace(start=pos_from[0], stop=pos_to[0], num=substeps)
+            y_segm = np.linspace(start=pos_from[1], stop=pos_to[1], num=substeps)
+            curr_segm = np.vstack((x_segm, y_segm)).T
             patch = patches[curr_agent]
 
         return list(patches.values())

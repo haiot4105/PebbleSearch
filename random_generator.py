@@ -19,15 +19,16 @@ class Vertex:
 
 
 
-
 min_dist = 0.5
 min_x = -5
 max_x = 5
 min_y = -5
 max_y = 5
-vert_num = 10
-neighbours_num = 3
+vert_num = 30
+# neighbours_num = 3
 i = 0
+
+agents_num = 20
 
 
 x = random.uniform(min_x, max_x)
@@ -52,13 +53,43 @@ while i < vert_num-1:
         i += 1  
 
 for v_id, coord in positions.items():
-    neighbours = kd_tree.search_knn(coord, neighbours_num + 1, dist= lambda x, y : np.linalg.norm(x - y))
-    neighbours_id = [v[0].data.v_id for v in neighbours]
-    all_neighbours[v_id] = neighbours_id[1:]
+    neighbours_num = random.randint(2, 4) - len(all_neighbours.get(v_id, []))
+    if neighbours_num > 0:
+        neighbours = kd_tree.search_knn(coord, neighbours_num + 1, dist= lambda x, y : np.linalg.norm(x - y))
+        neighbours_id = [v[0].data.v_id for v in neighbours]
+        all_neighbours[v_id] = all_neighbours.get(v_id, []) + neighbours_id[1:]
+        for n in neighbours_id[1:]:
+            if n not in all_neighbours:
+                all_neighbours[n] = [v_id]
+            else:
+                all_neighbours[n].append(v_id)
 
 
 for i in range(vert_num):
     print("g.add_vertex(", i, ", np.array([", positions[i][0], ",", positions[i][1], "]), {", ', '.join([str(n) for n in all_neighbours[i]]),"})")    
 
     
+starts = dict()
+goals = dict()
 
+starts_set = set()
+goals_set = set()
+
+a = 0
+while a < agents_num:
+    start = random.randint(0, vert_num-1)
+    goal = random.randint(0, vert_num-1)
+    
+    if start in starts_set or goal in goals_set:
+        continue
+
+    starts_set.add(start)
+    goals_set.add(goal)
+
+    starts[a] = start
+    goals[a] = goal
+    a += 1 
+
+print(list(range(agents_num)))
+print(starts)
+print(goals)
