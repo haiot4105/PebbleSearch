@@ -32,13 +32,13 @@ class PushAndSwap:
 
     def push(self, agent, target):
         print("(push) Start. Agent: ", agent, target)
-        print(self.agents_positions)
+        # print(self.agents_positions)
         p_star_exists, p_star = shortest_path(self.graph, self.agents_positions[agent], target, {})
 
         if not p_star_exists:
             print("(push) Path to target vertex not found")
             return False
-        
+        print(p_star)
         p_star.pop()
         v_id = p_star.pop()
 
@@ -61,7 +61,7 @@ class PushAndSwap:
                     return False
 
                 p_exists, p = path_to_closest_empty_vertex(self.graph, v_id, self.empty_vertices, blocked)
-
+                print(p)
                 if not p_exists:
                     print("(push) Path to empty vertex not found. Agent: ", agent)
                     return False
@@ -80,15 +80,24 @@ class PushAndSwap:
 
     def swap(self, agent):
         print("(swap) Start. Agent: ", agent)
+        # print(self.agents_positions)
         p_star_exists, p_star = shortest_path(self.graph, self.agents_positions[agent], self.goals[agent], {}) # TODO save path from push
-
+        
+        
         if not p_star_exists:
             print("(swap) Path to goal vertex not found")
             return False, None
         print(p_star)
         second_agent = self.occupied_vertices[p_star[-2]]
-        success = False,
+        print("(swap) Agent 2: ", second_agent)
+        success = False
 
+        tmp_plan = copy.deepcopy(self.solution)
+        tmp_empty = copy.deepcopy(self.empty_vertices)
+        tmp_occup = copy.deepcopy(self.occupied_vertices)
+        tmp_pos = copy.deepcopy(self.agents_positions)
+
+        
         for v in self.graph.get_vertices_degree_geq_3():
             self.reversed_plan = []
             p_exists, p = shortest_path(self.graph, self.agents_positions[agent], v, {})
@@ -99,6 +108,11 @@ class PushAndSwap:
                 if self.clear(v, agent, second_agent):
                     success = True
                     break
+
+            self.solution = copy.deepcopy(tmp_plan)
+            self.empty_vertices = copy.deepcopy(tmp_empty)
+            self.occupied_vertices = copy.deepcopy(tmp_occup)
+            self.agents_positions = copy.deepcopy(tmp_pos)
 
         if not success:
             print("(swap) Opeartion failed")
@@ -116,7 +130,8 @@ class PushAndSwap:
         
     def multipush(self, agent_1, agent_2, path):
         print("(multipush) Start. Agents:", agent_1, agent_2)
-        print(self.solution)
+        # print(self.agents_positions)
+        # print(self.solution)
         if len(path) < 2:
             return True
 
@@ -164,7 +179,7 @@ class PushAndSwap:
             blocked.clear()
             print("(multipush) Last move")
             self.move_agent(agent_1, self.agents_positions[agent_1], local_goal, True, agent_2) # Move first agent to empty vertex of degree 3
-            print(self.solution)
+            # print(self.solution)
             print("(multipush) End.")
             return True
         else:  
@@ -254,7 +269,7 @@ class PushAndSwap:
         return False
 
     def push_toward_empty_vertex(self, agent, blocked, need_to_reverce = False):
-        print("(push toward empty vertex) Start. Agent:", agent)
+        # print("(push toward empty vertex) Start. Agent:", agent)
         v_id = self.agents_positions[agent]
         p_exists, p = path_to_closest_empty_vertex(self.graph, v_id, self.empty_vertices, blocked)
                 
@@ -269,12 +284,12 @@ class PushAndSwap:
             r1 = self.occupied_vertices[v1_id]
             self.move_agent(r1, v1_id, v2_id, need_to_reverce)
             v2_id = v1_id
-        print("(push toward empty vertex) End")
+        # print("(push toward empty vertex) End")
         return True
             
     def execute_swap(self, agent_1, agent_2):  
         print("(execute swap) Start. Agents:", agent_1, agent_2)
-        print(self.solution)
+        # print(self.solution)
         v = self.agents_positions[agent_1]
         v2 = self.agents_positions[agent_2]
         
@@ -294,57 +309,81 @@ class PushAndSwap:
         self.move_agent(agent_1, n1, v)
         self.move_agent(agent_1, v, v2)
         self.move_agent(agent_2, n2, v)
-        print(self.solution)
+        # print(self.solution)
         print("(execute swap) End")
 
     def resolve(self, agent_1, agent_2, path):
         print("(resolve) Start. Agents:", agent_1, agent_2)
+        
+        # print(agent_1, self.agents_positions[agent_1], self.goals[agent_1])
+        # print(agent_2, self.agents_positions[agent_2], self.goals[agent_2])
+        # print(path)
+
         r = agent_1
         reached_goals = copy.deepcopy(self.reached_goals)
- 
-        t = path[-3]
+        print(path)
+        print(self.agents_positions[agent_2], self.agents_positions[agent_1])
+        print(self.goals[agent_2], self.goals[agent_1])
+        
+        if self.goals[agent_1] == self.agents_positions[agent_2]:
+            t = self.goals[agent_1]
+        else:
+            t = path[-3]
+
         s_pos = self.agents_positions[agent_2]
         s_goal = self.goals[agent_2]
+        
+        # print(s_pos, s_goal)
+
         self.reached_goals.add(s_pos)
         self.reached_goals.remove(s_goal)
 
+        # print(self.reached_goals)  
+
         if self.push(agent_1, t):
-            self.reached_goals = reached_goals
-            self.move_agent(agent_2, s_pos, s_goal)
+            print("(resolve) push completed")
+            self.reached_goals = copy.deepcopy(reached_goals)
+            if self.agents_positions[agent_2] != self.goals[agent_2]:
+                self.move_agent(agent_2, s_pos, s_goal)
             print("(resolve) End")
             return True
         else:
             r2 = r
             swap_res, swap_agent = self.swap(r2)
             while swap_res:
+                
+                if (self.agents_positions[agent_2] != s_goal) and (s_goal not in self.graph.get_neighbours(self.agents_positions[agent_2])):
+                    print("PnS Error!")
+                    exit()
+
                 if self.agents_positions[agent_2] == s_goal or self.push(agent_2, s_goal):
-                    self.reached_goals = reached_goals
+                    self.reached_goals = copy.deepcopy(reached_goals)
                     return True
                 elif self.agents_positions[r2] == self.goals[r2]:
                     self.reached_goals.add(self.goals[r2])
                     r2 = swap_agent
                     p_star = shortest_path(self.graph, self.agents_positions[r2], self.goals[r2], {})
                     resolve_res = self.resolve(r2, agent_2, p_star)
-                    self.reached_goals = reached_goals
+                    self.reached_goals = copy.deepcopy(reached_goals)
                     return resolve_res
 
                 swap_res, swap_agent = self.swap(r2)
 
-        self.reached_goals = reached_goals
+        self.reached_goals = copy.deepcopy(reached_goals)
         print("(resolve) Operaion failed")
         return False
 
     def reverse(self):
         print("(reverse) Start")
-        print(self.solution)
+        # print(self.solution)
         for move in self.reversed_plan:
             self.move_agent(move[0], move[1], move[2])
-        print(self.solution)
+        # print(self.solution)
         print("(reverse) End")
 
     def move_agent(self, agent, v_from, v_to, need_to_reverse = False, other_agent = None):
         # TODO debug check for agent position and target
-        print("\t(move) Agent:", agent, "from", v_from, "to", v_to)
+        # print("\t(move) Agent:", agent, "from", v_from, "to", v_to)
         if self.agents_positions[agent] != v_from:
             print("Error: move from incorrect position!", agent, v_from, v_to)
             exit()
