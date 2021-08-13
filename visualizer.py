@@ -126,7 +126,7 @@ def draw(graph, starts, solution):
             curr_agent = solution[curr_step][0]
             curr_substep = 0
             
-            print(solution[curr_step][1], solution[curr_step][2], solution[curr_step][2] in graph.get_neighbours(solution[curr_step][1]))
+            # print(solution[curr_step][1], solution[curr_step][2], solution[curr_step][2] in graph.get_neighbours(solution[curr_step][1]))
 
             pos_from = graph.get_vertex_position(solution[curr_step][1]) 
             pos_to = graph.get_vertex_position(solution[curr_step][2])

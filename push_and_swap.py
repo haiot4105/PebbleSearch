@@ -38,7 +38,7 @@ class PushAndSwap:
         if not p_star_exists:
             print("(push) Path to target vertex not found")
             return False
-        print(p_star)
+        # print(p_star)
         p_star.pop()
         v_id = p_star.pop()
 
@@ -61,7 +61,7 @@ class PushAndSwap:
                     return False
 
                 p_exists, p = path_to_closest_empty_vertex(self.graph, v_id, self.empty_vertices, blocked)
-                print(p)
+                # print(p)
                 if not p_exists:
                     print("(push) Path to empty vertex not found. Agent: ", agent)
                     return False
@@ -87,9 +87,13 @@ class PushAndSwap:
         if not p_star_exists:
             print("(swap) Path to goal vertex not found")
             return False, None
-        print(p_star)
+        # print(p_star)
         second_agent = self.occupied_vertices[p_star[-2]]
         print("(swap) Agent 2: ", second_agent)
+
+        pos_1 = self.agents_positions[agent]
+        pos_2 = self.agents_positions[second_agent]
+        print(pos_1, pos_2)
         success = False
 
         tmp_plan = copy.deepcopy(self.solution)
@@ -101,7 +105,7 @@ class PushAndSwap:
         for v in self.graph.get_vertices_degree_geq_3():
             self.reversed_plan = []
             p_exists, p = shortest_path(self.graph, self.agents_positions[agent], v, {})
-            print(p)
+            # print(p)
             if not p_exists:
                 continue
             if self.multipush(agent, second_agent, p):
@@ -122,7 +126,13 @@ class PushAndSwap:
         self.reverse()
         self.reversed_plan = []
 
+        print(self.agents_positions[agent], self.agents_positions[second_agent])
+        if self.agents_positions[agent] != pos_2 or self.agents_positions[second_agent] != pos_1:
+            print("(swap) Error!")
+            exit()
+
         if self.goals[second_agent] in self.reached_goals:
+            print("(swap) Resolve is needed!")
             return self.resolve(agent, second_agent, p_star), second_agent
         
         print("(swap) End")
@@ -140,7 +150,7 @@ class PushAndSwap:
         if path[-2] == self.agents_positions[agent_2]: 
             # TODO make it, using only one case (swap variables of agents)
             print("(multipush) Case 1")
-            print(path)
+            # print(path)
             path.pop()
             path.pop()
 
@@ -236,6 +246,7 @@ class PushAndSwap:
             
         # Try to move one of neighbouring agent to other position, where it can be pushed out
         print("(clear) Case 2")
+
         v_2 = self.agents_positions[agent_2]
         empty_neighbours = neighbours & self.empty_vertices
         blocked = empty_neighbours | {v}
@@ -247,29 +258,35 @@ class PushAndSwap:
         blocked.clear()
         
         self.move_agent(agent_1, v, v_2, True, agent_2) # move first agent to position of second
-        for n_id in neighbours: 
-            if n_id in empty_neighbours:
-                continue
-            n_agent = self.occupied_vertices[n_id]
+        v_3 = self.agents_positions[agent_2]
+        print(v, v_2, v_3)
 
+        for n_id in neighbours: 
+            empty_neighbours = neighbours & self.empty_vertices
+            
+            if n_id in empty_neighbours or n_id == v_2:
+                continue
+            
+            n_agent = self.occupied_vertices[n_id]
             for e_id in empty_neighbours:
                
                 self.move_agent(n_agent, self.agents_positions[n_agent], v, True)     # move one of the neighbouring agent to old position of first      
                 self.move_agent(n_agent, self.agents_positions[n_agent], e_id, True)  # move one of the neighbouring agent to one of empty neighboring vertex
-                self.move_agent(agent_1, v_2, v, True, agent_2)                                # move first agent to v
-                self.move_agent(agent_2, self.agents_positions[agent_2], v_2, True, agent_1)   # move second agent to its old position
 
-                blocked = (neighbours & self.empty_vertices) | {v, v_2}
+                blocked = (neighbours & self.empty_vertices) | {v, v_2, v_3}
                 if self.push_toward_empty_vertex(n_agent, blocked, True):
                     blocked.clear()
+                    self.move_agent(agent_1, v_2, v, True, agent_2)                                # move first agent to v
+                    self.move_agent(agent_2, self.agents_positions[agent_2], v_2, True, agent_1)   # move second agent to its old position
                     if len(neighbours & self.empty_vertices) >= 2:
                         print("(clear) End.")
                         return True
-                    break     
+                    break 
+        print("(clear) Operation failed")    
         return False
 
     def push_toward_empty_vertex(self, agent, blocked, need_to_reverce = False):
-        # print("(push toward empty vertex) Start. Agent:", agent)
+        print("(push toward empty vertex) Start. Agent:", agent)
         v_id = self.agents_positions[agent]
         p_exists, p = path_to_closest_empty_vertex(self.graph, v_id, self.empty_vertices, blocked)
                 
@@ -284,7 +301,7 @@ class PushAndSwap:
             r1 = self.occupied_vertices[v1_id]
             self.move_agent(r1, v1_id, v2_id, need_to_reverce)
             v2_id = v1_id
-        # print("(push toward empty vertex) End")
+        print("(push toward empty vertex) End")
         return True
             
     def execute_swap(self, agent_1, agent_2):  
@@ -314,16 +331,21 @@ class PushAndSwap:
 
     def resolve(self, agent_1, agent_2, path):
         print("(resolve) Start. Agents:", agent_1, agent_2)
-        
+
+        if(self.agents_positions[agent_1] != self.goals[agent_2]):
+            print("(resolve) Error", self.agents_positions[agent_1], self.agents_positions[agent_2])
+            print("(resolve) Error", self.goals[agent_1], self.goals[agent_2])
+            exit()
+        # print(self.solution)
         # print(agent_1, self.agents_positions[agent_1], self.goals[agent_1])
         # print(agent_2, self.agents_positions[agent_2], self.goals[agent_2])
-        # print(path)
+        print(path)
 
         r = agent_1
         reached_goals = copy.deepcopy(self.reached_goals)
-        print(path)
-        print(self.agents_positions[agent_2], self.agents_positions[agent_1])
-        print(self.goals[agent_2], self.goals[agent_1])
+        # print(path)
+        print(self.agents_positions[agent_1], self.agents_positions[agent_2])
+        print(self.goals[agent_1], self.goals[agent_2])
         
         if self.goals[agent_1] == self.agents_positions[agent_2]:
             t = self.goals[agent_1]
@@ -334,11 +356,15 @@ class PushAndSwap:
         s_goal = self.goals[agent_2]
         
         # print(s_pos, s_goal)
+        # print(reached_goals, self.reached_goals)
 
         self.reached_goals.add(s_pos)
-        self.reached_goals.remove(s_goal)
+        self.reached_goals.discard(s_goal)
 
-        # print(self.reached_goals)  
+
+        if (self.agents_positions[agent_2] != s_goal) and (s_goal not in self.graph.get_neighbours(self.agents_positions[agent_2])):
+            print("PnS Error!")
+            exit()
 
         if self.push(agent_1, t):
             print("(resolve) push completed")
@@ -362,7 +388,12 @@ class PushAndSwap:
                 elif self.agents_positions[r2] == self.goals[r2]:
                     self.reached_goals.add(self.goals[r2])
                     r2 = swap_agent
-                    p_star = shortest_path(self.graph, self.agents_positions[r2], self.goals[r2], {})
+                    p_star_exists, p_star = shortest_path(self.graph, self.agents_positions[r2], self.goals[r2], {})
+                    
+                    if not p_star_exists:
+                        self.reached_goals = copy.deepcopy(reached_goals)
+                        return False
+                    
                     resolve_res = self.resolve(r2, agent_2, p_star)
                     self.reached_goals = copy.deepcopy(reached_goals)
                     return resolve_res
@@ -382,8 +413,12 @@ class PushAndSwap:
         print("(reverse) End")
 
     def move_agent(self, agent, v_from, v_to, need_to_reverse = False, other_agent = None):
-        # TODO debug check for agent position and target
-        # print("\t(move) Agent:", agent, "from", v_from, "to", v_to)
+
+        print("\t(move) Agent:", agent, "from", v_from, "to", v_to)
+
+        if self.goals[agent] == v_from and v_from in self.reached_goals:
+            print("Alert! Agent ", agent, "moved from goal!")
+
         if self.agents_positions[agent] != v_from:
             print("Error: move from incorrect position!", agent, v_from, v_to)
             exit()

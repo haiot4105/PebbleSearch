@@ -2,74 +2,99 @@ import visualizer
 from graph import Graph
 from push_and_swap import PushAndSwap
 import numpy as np
+import copy
+import random_generator
 
+def is_valid_solution(graph, agents, starts, goals, solution):
+    if solution is None:
+        print("Solution not found")
+
+    agents_positions = copy.deepcopy(starts)
+    reached_goals = set() 
+    empty_vertices = copy.deepcopy(graph.vertices)
+    occupied_vertices = dict()
+
+    for agent, vert in starts.items():
+        occupied_vertices.update({vert : agent})
+        empty_vertices.remove(vert)
+    
+    step = 0
+    for agent, v_from, v_to in solution:
+        step += 1
+        # print(step)
+        # print("\t(move) Agent:", agent, "from", v_from, "to", v_to)
+        if agents_positions[agent] != v_from:
+            print("Error: move from incorrect position!", agent, v_from, v_to)
+            return False
+        if v_to in occupied_vertices:
+            print("Error: move to occupied position!", agent, v_from, v_to)
+            return False
+        if v_to not in graph.get_neighbours(v_from):
+            print("Error: move to vertex withou edge!", agent, v_from, v_to)
+            return False
+
+        empty_vertices.add(v_from)
+        empty_vertices.remove(v_to)
+        occupied_vertices.update({v_to : agent})
+        occupied_vertices.pop(v_from)
+        agents_positions[agent] = v_to
+
+
+    for agent, pos in agents_positions.items():
+        if pos != goals[agent]:
+            print("Agent", agent, "doesnt reach goal")
+            return False
+    return True
+
+
+
+
+
+# positions, all_neighbours = random_generator.generate_random_graph(min_dist, min_x , max_x, min_y , max_y, vert_num , neighbours_max_num )
 g = Graph()
-# g.add_vertex(0, np.array([0.0, 0.0]), {1, 3, 4})
-# g.add_vertex(1, np.array([5.0, 0.0]), {0, 2, 4})
-# g.add_vertex(2, np.array([5.0, 5.0]), {1, 3})
-# g.add_vertex(3, np.array([0.0, 5.0]), {0, 2})
-# g.add_vertex(4, np.array([2.5, 2.5]), {0, 1})
-
-# a = [0, 1, 2]
-
-# s = {0 : 0, 1 : 1, 2 : 2}
-# t = {0 : 0, 1 : 2, 2 : 1}
-
-# g.add_vertex( 0 , np.array([ -1.3673651084578786 , 2.2491687771793787 ]), { 7, 4, 2 })
-# g.add_vertex( 1 , np.array([ -3.698833413174707 , -3.1063663215782125 ]), { 5, 8, 2 })
-# g.add_vertex( 2 , np.array([ -2.6038433077966916 , -1.3307215448757348 ]), { 5, 8, 9 })
-# g.add_vertex( 3 , np.array([ 0.017826425750378405 , -4.218348331834337 ]), { 9, 6, 1 })
-# g.add_vertex( 4 , np.array([ 0.2604987027337753 , 0.222693918484258 ]), { 0, 6, 2 })
-# g.add_vertex( 5 , np.array([ -2.8007923517020994 , -2.0702802587520717 ]), { 2, 8, 1 })
-# g.add_vertex( 6 , np.array([ 1.229458332225617 , -2.3201592519562766 ]), { 3, 4, 0 })
-# g.add_vertex( 7 , np.array([ -2.804478366415962 , 2.149338326062855 ]), { 0, 2, 4 })
-# g.add_vertex( 8 , np.array([ -3.9913090144860295 , -1.5351973442965283 ]), { 5, 2, 1 })
-# g.add_vertex( 9 , np.array([ -1.5704839815950988 , -2.978981542285445 ]), { 5, 2, 3 })
-
-
-g.add_vertex( 0 , np.array([ -4.464541536153481 , 2.4334212668587005 ]), { 4, 14, 6 })
-g.add_vertex( 1 , np.array([ 3.7198989875949433 , 3.719927265721335 ]), { 16, 9, 15, 3, 9 })
-g.add_vertex( 2 , np.array([ 1.7048514558105587 , -0.8368080255307353 ]), { 11, 24, 20, 11, 24 })
-g.add_vertex( 3 , np.array([ 2.5251535545944 , 1.0022222775431588 ]), { 1, 24, 12, 15, 25 })
-g.add_vertex( 4 , np.array([ -3.822783582488775 , 1.9188951077743832 ]), { 0, 14, 6, 14 })
-g.add_vertex( 5 , np.array([ -4.635463789487958 , -3.2898449955816433 ]), { 29, 10, 21, 27, 10 })
-g.add_vertex( 6 , np.array([ -2.7242649541472694 , 2.8717916088178566 ]), { 0, 4, 18 })
-g.add_vertex( 7 , np.array([ -0.14800064867121687 , -2.247721979764524 ]), { 27, 11, 8, 21 })
-g.add_vertex( 8 , np.array([ -0.9673452846489976 , -0.8655954235226204 ]), { 7, 26, 18 })
-g.add_vertex( 9 , np.array([ 2.0845318534184054 , 3.5148751593165777 ]), { 1, 28, 16, 1, 12, 23 })
-g.add_vertex( 10 , np.array([ -3.8850646674188107 , -1.4970335651940045 ]), { 5, 29, 5 })
-g.add_vertex( 11 , np.array([ 0.9894119078848806 , -1.1531028075228167 ]), { 2, 7, 2 })
-g.add_vertex( 12 , np.array([ 1.0415000941890087 , 2.21767111924824 ]), { 28, 19, 9, 3, 19, 23 })
-g.add_vertex( 13 , np.array([ 4.905984194728417 , -3.082430428465103 ]), { 22, 17, 20, 22 })
-g.add_vertex( 14 , np.array([ -4.429837720247657 , 1.5498524968609644 ]), { 0, 4, 4 })
-g.add_vertex( 15 , np.array([ 3.6986884610559354 , 2.054693298562422 ]), { 1, 3, 25, 25 })
-g.add_vertex( 16 , np.array([ 3.0627046534759277 , 4.071621499404822 ]), { 1, 9 })
-g.add_vertex( 17 , np.array([ 4.380441640055686 , -1.892935772181156 ]), { 13, 22, 22 })
-g.add_vertex( 18 , np.array([ -1.4235430944568983 , 0.6089434597398 ]), { 26, 8, 19, 6, 19 })
-g.add_vertex( 19 , np.array([ -0.43995410441853267 , 1.8604016967093688 ]), { 12, 18, 12, 18 })
-g.add_vertex( 20 , np.array([ 2.5144142558960016 , -1.4990883324958002 ]), { 2, 13 })
-g.add_vertex( 21 , np.array([ -1.8500049445449651 , -3.48649671139892 ]), { 5, 27, 7 })
-g.add_vertex( 22 , np.array([ 4.344385395953534 , -2.5152584746360382 ]), { 13, 17, 17, 13 })
-g.add_vertex( 23 , np.array([ 0.4437974073408002 , 4.018785993510056 ]), { 28, 9, 12 })
-g.add_vertex( 24 , np.array([ 2.484462581046662 , -0.33129581934523955 ]), { 2, 3, 2 })
-g.add_vertex( 25 , np.array([ 4.891477979681078 , 0.9659827827659324 ]), { 15, 15, 3 })
-g.add_vertex( 26 , np.array([ -0.9005556397829118 , 0.0992530538540235 ]), { 8, 18 })
-g.add_vertex( 27 , np.array([ -0.7898522636460239 , -3.341463171730319 ]), { 5, 7, 21 })
-g.add_vertex( 28 , np.array([ 1.0340123752209784 , 3.3106627601925567 ]), { 9, 12, 23 })
-g.add_vertex( 29 , np.array([ -4.357637982164524 , -1.7345633348172496 ]), { 5, 10 })
-
-a = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-s = {0: 8, 1: 5, 2: 7, 3: 16, 4: 23, 5: 2, 6: 19, 7: 0, 8: 14, 9: 22, 10: 26, 11: 12, 12: 28, 13: 3, 14: 6, 15: 24, 16: 21, 17: 4, 18: 10, 19: 17}
-t = {0: 28, 1: 4, 2: 27, 3: 8, 4: 12, 5: 26, 6: 24, 7: 3, 8: 21, 9: 2, 10: 17, 11: 13, 12: 22, 13: 7, 14: 1, 15: 5, 16: 9, 17: 29, 18: 14, 19: 19}
-
-# a = [0, 1, 2, 3, 4]
-
-# s = {0 : 0, 1 : 1, 2 : 2, 3 : 3, 4 : 4}
-# t = {0 : 9, 1 : 3, 2 : 5, 3 : 6, 4 : 7}
-
+g.add_vertex( 0 , np.array([ -4.484706907438003 , 4.143077260708379 ]), { 19, 20, 6, 7 })
+g.add_vertex( 1 , np.array([ -3.045206481960302 , -1.274916251283603 ]), { 25, 3, 4 })
+g.add_vertex( 2 , np.array([ -0.25261828454632873 , 3.038115600596335 ]), { 5, 6, 15, 16, 23 })
+g.add_vertex( 3 , np.array([ -3.1272968019703464 , 0.324167516187714 ]), { 1, 22, 6, 25 })
+g.add_vertex( 4 , np.array([ -0.3244490078583251 , -3.184503195864191 ]), { 1, 29, 27, 12, 13 })
+g.add_vertex( 5 , np.array([ -0.22543645252546174 , 4.85972603981312 ]), { 16, 2, 23, 28, 15 })
+g.add_vertex( 6 , np.array([ -1.5372847921156874 , 2.1943585809432786 ]), { 0, 2, 3, 16, 22 })
+g.add_vertex( 7 , np.array([ -3.4425610596689005 , 3.0524861073883933 ]), { 0, 19, 20, 22 })
+g.add_vertex( 8 , np.array([ 3.023614645212307 , 3.066070717789522 ]), { 21, 23, 26, 28, 14 })
+g.add_vertex( 9 , np.array([ -4.794045625554997 , -2.833206499660905 ]), { 25, 18, 11 })
+g.add_vertex( 10 , np.array([ 3.863815654043499 , -1.5230294282338184 ]), { 17, 24, 26, 27, 29 })
+g.add_vertex( 11 , np.array([ -4.509607402794248 , -4.195880926556078 ]), { 9, 18 })
+g.add_vertex( 12 , np.array([ -2.534315787347756 , -3.5386154586144194 ]), { 18, 4, 13 })
+g.add_vertex( 13 , np.array([ -2.7085384730458886 , -4.368336339448104 ]), { 18, 4, 25, 12 })
+g.add_vertex( 14 , np.array([ 1.8087594847156776 , 2.0512042773637162 ]), { 8, 26, 23 })
+g.add_vertex( 15 , np.array([ 0.2721394532037458 , 4.686211051622166 ]), { 2, 5 })
+g.add_vertex( 16 , np.array([ -1.4839561547674784 , 3.7309692072061402 ]), { 2, 5, 6 })
+g.add_vertex( 17 , np.array([ 3.414347104807792 , -2.9859481285746736 ]), { 24, 10, 27, 29 })
+g.add_vertex( 18 , np.array([ -3.654873052179383 , -3.6855110648029346 ]), { 9, 11, 12, 13 })
+g.add_vertex( 19 , np.array([ -4.247841063048169 , 4.747120479564309 ]), { 0, 20, 7 })
+g.add_vertex( 20 , np.array([ -3.4252433009697625 , 4.288870104920747 ]), { 0, 19, 7 })
+g.add_vertex( 21 , np.array([ 4.3648032380104524 , 2.786455412601523 ]), { 8, 26 })
+g.add_vertex( 22 , np.array([ -2.1816809159841277 , 1.4460715949279122 ]), { 3, 6, 7 })
+g.add_vertex( 23 , np.array([ 0.77932487499882 , 2.068984329633058 ]), { 8, 2, 5, 14 })
+g.add_vertex( 24 , np.array([ 4.908278968019301 , -2.8721262511075296 ]), { 17, 10, 27 })
+g.add_vertex( 25 , np.array([ -3.633967827386635 , -2.1285910024062735 ]), { 1, 3, 13, 9 })
+g.add_vertex( 26 , np.array([ 3.331436152501116 , 1.0843128087992016 ]), { 21, 8, 10, 14 })
+g.add_vertex( 27 , np.array([ 1.508850902019212 , -1.2780570669232096 ]), { 24, 17, 10, 4 })
+g.add_vertex( 28 , np.array([ 2.634492367711778 , 4.336673460920874 ]), { 8, 5 })
+g.add_vertex( 29 , np.array([ -0.06037857943481573 , -2.446046010905526 ]), { 17, 10, 4 })
+a = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] 
+s = {0: 21, 1: 25, 2: 28, 3: 18, 4: 16, 5: 5, 6: 8, 7: 24, 8: 9, 9: 2, 10: 11, 11: 19, 12: 12, 13: 29, 14: 15, 15: 10, 16: 22, 17: 0, 18: 1, 19: 3} 
+t = {0: 15, 1: 13, 2: 0, 3: 25, 4: 26, 5: 19, 6: 23, 7: 22, 8: 10, 9: 7, 10: 5, 11: 6, 12: 16, 13: 2, 14: 1, 15: 8, 16: 9, 17: 24, 18: 20, 19: 28}
+solution = None
 
 solver = PushAndSwap(g, a, s, t)
 success, solution = solver.solve()
-print(success, solution)
+valid = is_valid_solution(g,a,s,t,solution)
+print("Success:", success, "; Valid: ", valid)
+if not valid or not success:
+    random_generator.print_graph(vert_num, positions, all_neighbours)
+    print(a, s, t)
+
 visualizer.draw(g, s, solution)
+
 
