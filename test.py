@@ -82,4 +82,4 @@ def single_test(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max_y = 5, ve
 
 for i in range(100):         
     if not single_test():
-        exit()
+        exit(-1)
