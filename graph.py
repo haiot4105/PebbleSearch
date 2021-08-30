@@ -42,6 +42,10 @@ class Graph:
     def get_vertices_degree_geq_3(self):
         return self.degreegeq3
 
+    def all_vertices_is_degree_2(self):
+        # TODO
+        return False
+
   
 class Node:
 

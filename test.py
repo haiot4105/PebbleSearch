@@ -1,9 +1,10 @@
 import visualizer
 from graph import Graph
-from push_and_swap import PushAndSwap
+from push_and_rotate import PushAndRotate
 import numpy as np
 import copy
 import random_generator
+import traceback
 
 def is_valid_solution(graph, agents, starts, goals, solution):
     if solution is None:
@@ -54,13 +55,13 @@ def single_test(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max_y = 5, ve
     positions, all_neighbours = random_generator.generate_random_graph(min_dist, min_x, max_x, min_y, max_y, vert_num, neighbours_max_num)
     g = Graph()
 
-    for i in range(30):
+    for i in range(vert_num):
         g.add_vertex( i , positions[i], all_neighbours[i])
 
     a, s, t = random_generator.generate_random_agents(vert_num=vert_num, agents_num=agents_num)
     solution = None
     try:
-        solver = PushAndSwap(g, a, s, t)
+        solver = PushAndRotate(g, a, s, t)
         success, solution = solver.solve()
         valid = is_valid_solution(g,a,s,t,solution)
         print("Success:", success, "; Valid: ", valid)
@@ -68,11 +69,11 @@ def single_test(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max_y = 5, ve
             random_generator.print_graph(vert_num, positions, all_neighbours)
             print(a, s, t)
             return False
-    except:
+    except Exception:
         print("Error")
-        print()
+        print(traceback.format_exc())
         random_generator.print_graph(vert_num, positions, all_neighbours)
-        print(a, s, t)
+        print("a = ", a, "\ns = ", s, "\nt = ", t)
         return False
     
     if vis:
@@ -81,5 +82,5 @@ def single_test(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max_y = 5, ve
     return True
 
 for i in range(100):         
-    if not single_test():
+    if not single_test(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max_y = 4, vert_num = 50, neighbours_max_num = 5, agents_num = 45, vis = False):
         exit(-1)

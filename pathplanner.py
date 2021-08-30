@@ -106,7 +106,6 @@ def make_path(node):
     current = node
     path = []
     while current.parent:
-        
         path.append(current.v_id)
         current = current.parent
     path.append(current.v_id)
