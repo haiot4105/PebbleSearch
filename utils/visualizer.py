@@ -1,3 +1,5 @@
+# TODO Optimization and refactoring are needed 
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
@@ -9,20 +11,6 @@ fig.set_dpi(100)
 fig.set_size_inches(7, 7)
 ax = plt.axes(xlim=(-6, 6), ylim=(-6, 6))
 anim = None
-
-# def draw_graph(graph):
-    # circles = []
-    # for v in graph:
-    #     circle = plt.Circle(graph.get_vertex_position(v), 0.08, color='b')
-    #     ax.add_patch(circle)
-
-    # for e in graph.get_edges():
-    #     p1, p2 = graph.get_vertex_position(e[0]), graph.get_vertex_position(e[1])
-    #     x = np.array([p1[0], p2[0]])
-    #     y = np.array([p1[1], p2[1]])
-    #     plt.plot(x, y, color='b')
-
-    # plt.show()
 
 curr_step = 0
 curr_agent = 0

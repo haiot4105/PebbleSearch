@@ -1,4 +1,8 @@
-from pathplanner import shortest_path, path_to_closest_empty_vertex
+# from . import pathplanner
+
+from .pathplanner import shortest_path
+from .pathplanner import path_to_closest_empty_vertex
+
 import copy
 
 class PushAndRotate:
@@ -30,11 +34,9 @@ class PushAndRotate:
         for agent in self.agents:
             queue = []
             if self.graph.all_vertices_is_degree_2():
-                # print("Polygon planner")
                 if not self.plan_polygon(solution, agent):
                     return False, None
             else:
-                # print("General planner")
                 if not self.plan(solution, agent, queue):
                     return False, None
 

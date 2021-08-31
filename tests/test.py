@@ -1,10 +1,15 @@
-import visualizer
-from graph import Graph
-from push_and_rotate import PushAndRotate
+
+from context import pebble_search
+from pebble_search.push_and_rotate import PushAndRotate as PushAndRotate
+from pebble_search.graph import Graph as Graph
+import utils.random_generator as random_generator
+import utils.visualizer as visualizer
+
+
 import numpy as np
 import copy
-import random_generator
 import traceback
+import sys
 
 def is_valid_solution(graph, agents, starts, goals, solution):
     if solution is None:
@@ -47,9 +52,6 @@ def is_valid_solution(graph, agents, starts, goals, solution):
             return False
     return True
 
-
-
-
 def single_test(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max_y = 5, vert_num = 30, neighbours_max_num = 5, agents_num = 20, vis = False):
     
     positions, all_neighbours = random_generator.generate_random_graph(min_dist, min_x, max_x, min_y, max_y, vert_num, neighbours_max_num)
@@ -81,6 +83,6 @@ def single_test(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max_y = 5, ve
     
     return True
 
-for i in range(100):         
+for i in range(1):         
     if not single_test(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max_y = 4, vert_num = 50, neighbours_max_num = 5, agents_num = 45, vis = False):
         exit(-1)

@@ -1,5 +1,6 @@
 from heapq import heappop, heappush
-from graph import Graph, Node
+from .graph import Graph, Node
+
 
 class Open:
     def __init__(self):

@@ -1,7 +1,7 @@
 import random
 import kdtree
 import numpy as np
-import biconnected
+from . import biconnected
 
 
 class Vertex:
