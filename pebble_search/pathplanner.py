@@ -49,6 +49,8 @@ class Closed:
 
 
 def search(graph, start_id, goal_id, blocked, empty = None):
+    if empty is not None and len(empty) == 0:
+        return False, None
     # print("(shortest_path) Start. Vertices: ", start_id, goal_id)
     OPEN = Open()
     CLOSED = Closed()

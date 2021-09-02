@@ -108,11 +108,12 @@ def draw(graph, starts, solution):
         else:
             if curr_step + 1 < len(solution):
                 curr_step += 1
+                curr_substep = 0
             else:
                 curr_substep = len(curr_segm)-1
                 
             curr_agent = solution[curr_step][0]
-            curr_substep = 0
+            
             
             # print(solution[curr_step][1], solution[curr_step][2], solution[curr_step][2] in graph.get_neighbours(solution[curr_step][1]))
 

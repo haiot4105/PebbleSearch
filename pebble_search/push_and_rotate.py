@@ -23,10 +23,9 @@ class PushAndRotate:
             self.occupied_vertices.update({vert : agent})
             self.empty_vertices.discard(vert)
 
-        print(self.graph.positions)
-        print(self.graph.neighbours)
-        self.debug_prefix = ""
+        print("empty:", self.empty_vertices)
 
+        self.debug_prefix = ""
 
     def solve(self):
         solution = []

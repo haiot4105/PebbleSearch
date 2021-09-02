@@ -1,3 +1,5 @@
+# TODO writing tasks to JSON files
+
 import random
 import kdtree
 import numpy as np
@@ -78,9 +80,6 @@ def generate_random_graph(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max
         
         # print(positions, all_neighbours)
         
-
-
-
 def generate_random_agents(agents_num = 20, vert_num = 30):
 
     if agents_num > vert_num-2:
@@ -109,7 +108,6 @@ def generate_random_agents(agents_num = 20, vert_num = 30):
 
     return list(range(agents_num)), starts, goals
 
-
-def print_graph(vert_num, positions, all_neighbours):
-    for i in range(vert_num):
+def print_graph(positions, all_neighbours):
+    for i in range(len(positions)):
         print("g.add_vertex(", i, ", np.array([", positions[i][0], ",", positions[i][1], "]), {", ', '.join([str(n) for n in all_neighbours[i]]),"})")    

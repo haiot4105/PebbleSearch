@@ -1,25 +1,39 @@
 import numpy as np
+from scipy.spatial import KDTree
 
 class Graph:
     
-    def __init__(self):
+    def __init__(self, positions, all_neighbours):
         self.curr_id = 0
         self.vertices = set()
         self.neighbours = dict()
-        self.positions = dict()
+        self.positions = positions
         self.edges = set()
         self.degreegeq3 = set()
+        
 
-    def add_vertex(self, v_id, position, neighbours):
-        self.vertices.add(v_id)
-        self.neighbours.update({v_id : neighbours})
-        if len(neighbours) >= 3:
-            self.degreegeq3.add(v_id)
-        for n_id in neighbours:
-            if ((v_id, n_id) not in self.edges) and ((n_id, v_id) not in self.edges):
-                self.edges.add((v_id, n_id))
+        self.from_kd_ids = dict()
+        self.to_kd_ids = dict()
+        kd_pos = np.zeros((len(self.positions), 2))
 
-        self.positions.update({v_id : position})
+        kd_id = 0
+        for v_id, pos in self.positions.items():
+            kd_pos[kd_id] = pos
+            self.from_kd_ids[kd_id] = v_id
+            self.to_kd_ids[v_id] = kd_id
+            kd_id += 1
+
+        for v_id in positions:
+            self.vertices.add(v_id)
+            neighbours = all_neighbours[v_id]
+            self.neighbours.update({v_id : neighbours})
+            if len(neighbours) >= 3:
+                self.degreegeq3.add(v_id)
+            for n_id in neighbours:
+                if ((v_id, n_id) not in self.edges) and ((n_id, v_id) not in self.edges):
+                    self.edges.add((v_id, n_id))
+
+        self.kd_tree = KDTree(kd_pos)
 
     def get_vertex_position(self, v_id):
         return self.positions[v_id]
@@ -46,6 +60,9 @@ class Graph:
         # TODO
         return False
 
+    def get_vertices_in_zone(self, center, size):
+        return [self.from_kd_ids[kd_id] for kd_id in self.kd_tree.query_ball_point(center, size)]
+
   
 class Node:
 
@@ -64,3 +81,5 @@ class Node:
 
     def __lt__(self, other): #self < other (self has higher priority)
         return self.F < other.F or ((self.F == other.F) and (self.h < other.h))
+
+
