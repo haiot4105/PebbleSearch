@@ -66,6 +66,9 @@ class PushAndRotateWithSizes:
                     return False
             else:
                 if not self.push(solution, agent, v, self.successful_agents_positions()):
+                    print(self.occupied_vertices)
+                    if v not in self.occupied_vertices:
+                        return False
                     if not self.swap(solution, agent, self.occupied_vertices[v]):
                         return False
 
@@ -423,17 +426,85 @@ class PushAndRotateWithSizes:
             return False
 
     def clear_edge(self, solution, agent, v_from, v_to):
-        blocked = {v_from, v_to}
+        blocked = {v_from}
+        unoccupied_blocked = {v_to}
         commited_state = self.commit_state()
         for v in self.get_interfere_vertices(agent, v_from, v_to):
-            if not self.clear_vertex(solution, v, blocked):
+            if v in self.occupied_vertices and \
+                    not self.clear_interfere_vertex(solution, v, blocked, unoccupied_blocked, agent, self.occupied_vertices[v], v_from, v_to):
                 self.rollback_state(commited_state)
                 return False
-            blocked.add(v)
+            unoccupied_blocked.add(v)
+        return True
+
+    def clear_interfere_vertex(self, solution, v, blocked, unoccupied_blocked, agent_1, agent_2, v_from, v_to, rec=False ):
+        if v in blocked:
+            return False
+        tmp_empty = set()
+        for eps in self.empty_vertices:
+            if eps in unoccupied_blocked:
+                continue
+            p_from = self.graph.get_vertex_position(v_from)
+            p_to = self.graph.get_vertex_position(v_to)
+            if self.check_suspect_vertex(p_from, p_to, eps, agent_1, agent_2):
+                continue
+            tmp_empty.add(eps)
+
+        tmp_graph = copy.deepcopy(self.graph)
+        for n in self.graph.get_neighbours(v):
+            p1 = self.graph.get_vertex_position(v)
+            p2 = self.graph.get_vertex_position(n)
+            if self.check_suspect_vertex(p1, p2, v_from, agent_2, agent_1):
+                tmp_graph.remove_edge(v, n)
+
+        p_exists, p = path_to_closest_empty_vertex(tmp_graph, v, tmp_empty, blocked)
+
+        if not p_exists:
+            if rec:
+                return False
+            p_exists, p = path_to_closest_empty_vertex(self.graph, v, tmp_empty, blocked)
+            if not p_exists:
+                return False
+            blocked = {v}
+            unoccupied_blocked = {p[-2]}
+            last_try = self.clear_interfere_vertex([], v_from, blocked,unoccupied_blocked, agent_2, agent_1, v, p[-2], True)
+            if not last_try:
+                return False
+        print(p)
+        v_to = p.pop(0)
+        while v != v_to:
+            v_from = p.pop(0)
+            if v_from in self.occupied_vertices:
+                agent = self.occupied_vertices[v_from]
+                if not self.try_move_agent(solution, agent, v_from, v_to):
+                    return False
+                v_to = v_from
+            else:
+                # TODO fix bug with tmp_path
+                tmp_path = [v_to, v_from]
+                tmp_v = p.pop(0)
+                while True:
+                    if tmp_v in self.occupied_vertices:
+                        break
+                    tmp_path.append(tmp_v)
+                    tmp_v = p.pop(0)
+
+                print(tmp_path)
+                tmp_v_from = tmp_v
+                tmp_v_to = tmp_path.pop()
+                agent = self.occupied_vertices[tmp_v_from]
+                while True:
+                    if not self.try_move_agent(solution, agent, tmp_v_from, tmp_v_to):
+                        return False
+                    if tmp_v_to == v_to:
+                        v_to = tmp_v
+                        break
+                    tmp_v_from = tmp_v_to
+                    tmp_v_to = tmp_path.pop()
         return True
 
     def get_interfere_vertices(self, agent, v_from, v_to):
-        result = []
+        result = set()
         edge_len = self.graph.get_euclidian_distance(v_from, v_to)
         p_from = self.graph.get_vertex_position(v_from)
         p_to = self.graph.get_vertex_position(v_to)
@@ -442,12 +513,16 @@ class PushAndRotateWithSizes:
         for v in suspect_vert:
             if v == v_from:
                 continue
-            p = self.graph.get_vertex_position(v)
-            print(v_from, v_to, v, dist_point_line_segment(p_from, p_to, p))
-            if v in self.occupied_vertices and dist_point_line_segment(p_from, p_to, p) < self.sizes[agent] + \
-                    self.sizes[self.occupied_vertices[v]]:
-                result.append(v)
+            if v in self.occupied_vertices and \
+                    self.check_suspect_vertex(p_from, p_to, v, agent, self.occupied_vertices[v]):
+                result.add(v)
         return result
+
+    def check_suspect_vertex(self, edge_p1, edge_p2, suspect_v, edge_agent, suspect_agent):
+        suspect_p = self.graph.get_vertex_position(suspect_v)
+        if dist_point_line_segment(edge_p1, edge_p2, suspect_p) < self.sizes[edge_agent] + self.sizes[suspect_agent]:
+            return True
+        return False
 
     def check_move(self, agent, v_from, v_to):
         if self.agents_positions[agent] != v_from:
@@ -464,3 +539,4 @@ class PushAndRotateWithSizes:
         #     print(self.debug_prefix,  "Alert! Agent ", agent, "moved from goal!")
         # if self.goals[agent] == v_to and v_to in self.reached_goals:
         #     print(self.debug_prefix,  "Alert! Agent ", agent, "moved back to goal!")
+

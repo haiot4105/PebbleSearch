@@ -8,7 +8,7 @@ import time
 
 fig = plt.figure()
 fig.set_dpi(100)
-fig.set_size_inches(7, 7)
+fig.set_size_inches(10, 10)
 ax = plt.axes(xlim=(-6, 6), ylim=(-6, 6))
 anim = None
 
@@ -41,11 +41,14 @@ def draw(graph, starts, solution):
     global curr_segm
     global patch
 
+    Writer = animation.writers['ffmpeg']
+    writer = Writer(fps=24, metadata=dict(artist='Me'), bitrate=2600)
+
     if solution is None:
         solution = [(0, starts[0], starts[0])]
     patches = dict()
     for agent, start in starts.items():
-        patches[agent] = plt.Circle(graph.get_vertex_position(start), 0.3, fc='r', zorder=10)
+        patches[agent] = plt.Circle(graph.get_vertex_position(start), 0.4, fc='r', zorder=10)
 
     curr_step = 0
     curr_substep = 0
@@ -132,7 +135,11 @@ def draw(graph, starts, solution):
     anim = animation.FuncAnimation(fig, animate, 
                                 init_func=init, 
                                 frames=None, 
-                                interval=5,
-                                blit=False,
-                                repeat=False )
-    plt.show()
+                                interval=100,
+                                blit=True,
+                                repeat=False,
+                                save_count=300)
+
+    anim.save("test.mp4", writer=writer)
+    # plt.show()
+    print("Saved")
