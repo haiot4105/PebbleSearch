@@ -426,8 +426,8 @@ class PushAndRotateWithSizes:
             return False
 
     def clear_edge(self, solution, agent, v_from, v_to):
-        blocked = {v_from}
-        unoccupied_blocked = {v_to}
+        blocked = {v_from, v_to}
+        unoccupied_blocked = set()
         commited_state = self.commit_state()
         for v in self.get_interfere_vertices(agent, v_from, v_to):
             if v in self.occupied_vertices and \
@@ -437,7 +437,8 @@ class PushAndRotateWithSizes:
             unoccupied_blocked.add(v)
         return True
 
-    def clear_interfere_vertex(self, solution, v, blocked, unoccupied_blocked, agent_1, agent_2, v_from, v_to, rec=False ):
+    def clear_interfere_vertex(self, solution, v, blocked, unoccupied_blocked, agent_1, agent_2, v_from, v_to, rec=False):
+        print("(clear_interfere_vertex) Start")
         if v in blocked:
             return False
         tmp_empty = set()
@@ -467,9 +468,12 @@ class PushAndRotateWithSizes:
                 return False
             blocked = {v}
             unoccupied_blocked = {p[-2]}
-            last_try = self.clear_interfere_vertex([], v_from, blocked,unoccupied_blocked, agent_2, agent_1, v, p[-2], True)
+            state = self.commit_state()
+            last_try = self.clear_interfere_vertex([], v_from, blocked, unoccupied_blocked, agent_2, agent_1, v, p[-2], True)
+            self.rollback_state(state)
             if not last_try:
                 return False
+
         print(p)
         v_to = p.pop(0)
         while v != v_to:
@@ -501,6 +505,7 @@ class PushAndRotateWithSizes:
                         break
                     tmp_v_from = tmp_v_to
                     tmp_v_to = tmp_path.pop()
+        print("(clear_interfere_vertex) End")
         return True
 
     def get_interfere_vertices(self, agent, v_from, v_to):

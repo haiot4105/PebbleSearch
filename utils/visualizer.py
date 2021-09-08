@@ -132,14 +132,21 @@ def draw(graph, starts, solution):
 
         return list(patches.values())
 
-    anim = animation.FuncAnimation(fig, animate, 
-                                init_func=init, 
-                                frames=None, 
-                                interval=100,
-                                blit=True,
-                                repeat=False,
-                                save_count=300)
+    # anim = animation.FuncAnimation(fig, animate,
+    #                             init_func=init,
+    #                             frames=None,
+    #                             interval=100,
+    #                             blit=True,
+    #                             repeat=False,
+    #                             save_count=300)
 
-    anim.save("test.mp4", writer=writer)
-    # plt.show()
+    anim = animation.FuncAnimation(fig, animate,
+                                init_func=init,
+                                frames=None,
+                                interval=100,
+                                blit=False,
+                                repeat=False)
+
+    # anim.save("test.mp4", writer=writer)
+    plt.show()
     print("Saved")
