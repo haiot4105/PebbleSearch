@@ -33,6 +33,20 @@ import sys
 # s = {0: 0, 1: 1, 2: 2}
 # t = {0: 3, 1: 1, 2: 2}
 
+# positions = {0: np.array([2.5, 1.5]),
+#              1: np.array([1.5, 3.5]),
+#              2: np.array([1.5, 5.5]),
+#              3: np.array([4.5, 0.5]),
+#              4: np.array([3.5, 0.5]),
+#              5: np.array([0.5, 4.5])}
+#
+# all_neighbours = {0: {2, 5, 4},
+#                   1: {3, 4},
+#                   2: {0, 3, 4, 5},
+#                   3: {1, 2, 4},
+#                   4: {1, 2, 3, 0},
+#                   5: {0, 2}}
+
 positions = {0: np.array([2.5, 1.5]),
              1: np.array([1.5, 3.5]),
              2: np.array([1.5, 5.5]),
@@ -54,10 +68,12 @@ s = {0: 0, 1: 1}
 t = {0: 2, 1: 1}
 
 solution = None
-
+valid = False
+success = False
 solver = PushAndRotateWithSizes(g, a, s, t, r)
 success, solution = solver.solve()
-valid = is_valid_solution(g, a,s,t,solution)
+if solution is not None:
+    valid = is_valid_solution(g, a,s,t,solution)
 print("Success:", success, "; Valid: ", valid)
 if not valid or not success:
     random_generator.print_graph(positions, all_neighbours)

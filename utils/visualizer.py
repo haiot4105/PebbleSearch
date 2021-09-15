@@ -9,7 +9,7 @@ import time
 fig = plt.figure()
 fig.set_dpi(100)
 fig.set_size_inches(10, 10)
-ax = plt.axes(xlim=(-6, 6), ylim=(-6, 6))
+ax = plt.axes(xlim=(0, 6), ylim=(0, 6))
 anim = None
 
 curr_step = 0
@@ -46,17 +46,18 @@ def draw(graph, starts, solution):
 
     if solution is None:
         solution = [(0, starts[0], starts[0])]
+
     patches = dict()
     for agent, start in starts.items():
-        patches[agent] = plt.Circle(graph.get_vertex_position(start), 0.4, fc='r', zorder=10)
+        patches[agent] = plt.Circle(graph.get_vertex_position(start), 0.4, fc='firebrick', zorder=10)
 
     curr_step = 0
     curr_substep = 0
-    
+
     curr_agent = solution[curr_step][0]
-    pos_from = graph.get_vertex_position(solution[curr_step][1]) 
+    pos_from = graph.get_vertex_position(solution[curr_step][1])
     pos_to = graph.get_vertex_position(solution[curr_step][2])
-    
+
     length = np.linalg.norm(pos_to - pos_from)
     substeps = int(length/dt)
     x_segm = np.linspace(start=pos_from[0], stop=pos_to[0], num=substeps)
@@ -74,7 +75,7 @@ def draw(graph, starts, solution):
     def init():
         circles = []
         for v in graph:
-            circle = plt.Circle(graph.get_vertex_position(v), 0.15, color='b')
+            circle = plt.Circle(graph.get_vertex_position(v), 0.15, color='cornflowerblue')
             ax.add_patch(circle)
             ax.text(*graph.get_vertex_position(v), str(v), fontweight='bold',zorder=10)
 
@@ -82,7 +83,7 @@ def draw(graph, starts, solution):
             p1, p2 = graph.get_vertex_position(e[0]), graph.get_vertex_position(e[1])
             x = np.array([p1[0], p2[0]])
             y = np.array([p1[1], p2[1]])
-            plt.plot(x, y, color='b')
+            plt.plot(x, y, color='cornflowerblue')
 
         for a, p in patches.items():
             ax.add_patch(p)
@@ -139,14 +140,15 @@ def draw(graph, starts, solution):
     #                             blit=True,
     #                             repeat=False,
     #                             save_count=300)
-
-    anim = animation.FuncAnimation(fig, animate,
-                                init_func=init,
-                                frames=None,
-                                interval=100,
-                                blit=False,
-                                repeat=False)
-
+    if solution == [(0, starts[0], starts[0])]:
+        init()
+    else:
+        anim = animation.FuncAnimation(fig, animate,
+                                    init_func=init,
+                                    frames=None,
+                                    interval=100,
+                                    blit=False,
+                                    repeat=False)
     # anim.save("test.mp4", writer=writer)
     plt.show()
     print("Saved")
