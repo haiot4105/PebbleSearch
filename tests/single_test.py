@@ -56,14 +56,14 @@ positions = {0: np.array([2.5, 1.5]),
 
 all_neighbours = {0: {2, 5, 4},
                   1: {3, 4},
-                  2: {0, 3, 4, 5},
-                  3: {1, 2, 4},
+                  2: {0, 4, 5},
+                  3: {1, 4},
                   4: {1, 2, 3, 0},
                   5: {0, 2}}
 
 g = Graph(positions, all_neighbours)
 a = [0, 1]
-r = [0.4 for _ in range(2)]
+r = 0.4
 s = {0: 0, 1: 1}
 t = {0: 2, 1: 1}
 
@@ -73,7 +73,7 @@ success = False
 solver = PushAndRotateWithSizes(g, a, s, t, r)
 success, solution = solver.solve()
 if solution is not None:
-    valid = is_valid_solution(g, a,s,t,solution)
+    valid = is_valid_solution(g, a, s, t, solution)
 print("Success:", success, "; Valid: ", valid)
 if not valid or not success:
     random_generator.print_graph(positions, all_neighbours)

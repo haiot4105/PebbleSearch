@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.spatial import KDTree
 
+
 class Graph:
-    
+
     def __init__(self, positions, all_neighbours):
         self.curr_id = 0
         self.vertices = set()
@@ -10,7 +11,6 @@ class Graph:
         self.positions = positions
         self.edges = set()
         self.degreegeq3 = set()
-        
 
         self.from_kd_ids = dict()
         self.to_kd_ids = dict()
@@ -26,7 +26,7 @@ class Graph:
         for v_id in positions:
             self.vertices.add(v_id)
             neighbours = all_neighbours[v_id]
-            self.neighbours.update({v_id : neighbours})
+            self.neighbours.update({v_id: neighbours})
             if len(neighbours) >= 3:
                 self.degreegeq3.add(v_id)
             for n_id in neighbours:
@@ -67,29 +67,29 @@ class Graph:
             self.degreegeq3.discard(v2_id)
 
     def all_vertices_is_degree_2(self):
-        # TODO
-        return False
+        for _, ns in self.neighbours.items():
+            if len(ns) > 2:
+                return False
+        return True
 
     def get_vertices_in_zone(self, center, size):
         return [self.from_kd_ids[kd_id] for kd_id in self.kd_tree.query_ball_point(center, size)]
 
-  
+
 class Node:
 
-    def __init__(self, vertex_id, g = 0, h = 0, F = None, parent = None):
+    def __init__(self, vertex_id, g=0, h=0, F=None, parent=None):
         self.v_id = vertex_id
         self.g = g
         self.h = h
         if F is None:
             self.F = self.g + h
         else:
-            self.F = F        
+            self.F = F
         self.parent = parent
 
     def __eq__(self, other):
         return self.v_id == other.v_id
 
-    def __lt__(self, other): #self < other (self has higher priority)
+    def __lt__(self, other):  # self < other (self has higher priority)
         return self.F < other.F or ((self.F == other.F) and (self.h < other.h))
-
-
