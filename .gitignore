@@ -1,2 +1,7 @@
-/.vscode/
-/__pycache__/
+.vscode/
+.idea/
+__pycache__/
+pebble_search/__pycache__/
+tests/__pycache__/
+utils/__pycache__/
+*.mp4
