@@ -56,7 +56,7 @@ class Graph:
     def get_vertices_degree_geq_3(self):
         return self.degreegeq3
 
-    def remove_edge(self, v1_id, v2_id):
+    def discard_edge(self, v1_id, v2_id):
         self.neighbours[v1_id].discard(v2_id)
         self.neighbours[v2_id].discard(v1_id)
         self.edges.discard((v1_id, v2_id))
