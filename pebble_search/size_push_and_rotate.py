@@ -433,7 +433,7 @@ class PushAndRotateWithSizes:
             self.reverse(solution, tmp_solution)
             return True
         else:
-
+            # TODO clear deadlock edge, move main agent from v_from to v_to and reverse all agents, except main agent
             return False
 
     def clear_edge(self, solution, agent, v_from, v_to):
@@ -551,10 +551,40 @@ class PushAndRotateWithSizes:
                 if not self.clear_deadlock_interfere_vertex(tmp_solution, v, blocked, unoccupied_blocked, v_from, v_to):
                     self.rollback_state(first_committed_state)
                     return False
+                #TODO move agent back to v_from
                 unoccupied_blocked.add(v)
 
+        return True
 
+    def push_forward_path(self, solution, p, v):
+        v_to = p.pop(0)
+        while v != v_to:
+            v_from = p.pop(0)
+            if v_from in self._occupied_vertices:
+                agent = self._occupied_vertices[v_from]
+                if not self.try_move_agent(solution, agent, v_from, v_to):
+                    return False
+                v_to = v_from
+            else:
+                tmp_path = [v_to, v_from]
+                tmp_v = p.pop(0)
+                while True:
+                    if tmp_v in self._occupied_vertices:
+                        break
+                    tmp_path.append(tmp_v)
+                    tmp_v = p.pop(0)
 
+                tmp_v_from = tmp_v
+                tmp_v_to = tmp_path.pop()
+                agent = self._occupied_vertices[tmp_v_from]
+                while True:
+                    if not self.try_move_agent(solution, agent, tmp_v_from, tmp_v_to):
+                        return False
+                    if tmp_v_to == v_to:
+                        v_to = tmp_v
+                        break
+                    tmp_v_from = tmp_v_to
+                    tmp_v_to = tmp_path.pop()
         return True
 
     def clear_deadlock_interfere_vertex(self, solution, v, blocked, unoccupied_blocked, v_from, v_to):
@@ -580,46 +610,34 @@ class PushAndRotateWithSizes:
                 tmp_graph.discard_edge(*e)
                 tmp_graph_deadlock_free.discard_edge(*e)
 
-        for eps in tmp_empty:
-            # TODO
-            # p_exists, p = shortest_path(tmp_graph_deadlock_free, v, eps, blocked)
-            # if not p_exists:
-            #     p_exists, p = shortest_path(tmp_graph, v, eps, blocked)
-            #
-            # if not p_exists:
-            #     return False
-            #
-            # v_to = p.pop(0)
-            # while v != v_to:
-            #     v_from = p.pop(0)
-            #     if v_from in self._occupied_vertices:
-            #         agent = self._occupied_vertices[v_from]
-            #         if not self.try_move_agent(solution, agent, v_from, v_to):
-            #             return False
-            #         v_to = v_from
-            #     else:
-            #         tmp_path = [v_to, v_from]
-            #         tmp_v = p.pop(0)
-            #         while True:
-            #             if tmp_v in self._occupied_vertices:
-            #                 break
-            #             tmp_path.append(tmp_v)
-            #             tmp_v = p.pop(0)
-            #
-            #         tmp_v_from = tmp_v
-            #         tmp_v_to = tmp_path.pop()
-            #         agent = self._occupied_vertices[tmp_v_from]
-            #         while True:
-            #             if not self.try_move_agent(solution, agent, tmp_v_from, tmp_v_to):
-            #                 return False
-            #             if tmp_v_to == v_to:
-            #                 v_to = tmp_v
-            #                 break
-            #             tmp_v_from = tmp_v_to
-            #             tmp_v_to = tmp_path.pop()
+        committed_state = self.commit_state()
+        for eps in tmp_empty | (unoccupied_blocked & self._graph.get_neighbours(v_from)):
 
+            p_exists, p = shortest_path(tmp_graph_deadlock_free, v_from, eps, blocked)
+            if not p_exists or (len(p) > 2 and eps in unoccupied_blocked):
+                p_exists, p = shortest_path(tmp_graph, v_from, eps, blocked)
+            if not p_exists or (len(p) > 2 and eps in unoccupied_blocked):
+                continue
 
-        return True
+            tmp_solution = []
+            if not self.push_forward_path(tmp_solution, p, v_from):
+                self.rollback_state(committed_state)
+                continue
+
+            p_exists, p = path_to_closest_empty_vertex(tmp_graph_deadlock_free, v, tmp_empty, blocked)
+            if not p_exists:
+                p_exists, p = path_to_closest_empty_vertex(tmp_graph, v, tmp_empty, blocked)
+            if not p_exists:
+                continue
+
+            if not self.push_forward_path(tmp_solution, p, v):
+                self.rollback_state()
+                continue
+
+            solution += tmp_solution
+            return True
+
+        return False
 
     def get_interfere_vertices(self, v_from, v_to):
         result = set()
