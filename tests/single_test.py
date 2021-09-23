@@ -52,14 +52,16 @@ positions = {0: np.array([2.5, 1.5]),
              2: np.array([1.5, 5.5]),
              3: np.array([4.5, 0.5]),
              4: np.array([3.5, 0.5]),
-             5: np.array([0.5, 4.5])}
+             5: np.array([0.5, 4.5]),
+             6: np.array([2.5, 0])}
 
-all_neighbours = {0: {2, 5, 4},
+all_neighbours = {0: {2, 4},
                   1: {3, 4},
                   2: {0, 4, 5},
-                  3: {1, 4},
-                  4: {1, 2, 3, 0},
-                  5: {0, 2}}
+                  3: {1, 4, 6},
+                  4: {1, 2, 3, 0, 6},
+                  5: {2},
+                  6: {3, 4}}
 
 g = Graph(positions, all_neighbours)
 a = [0, 1]
