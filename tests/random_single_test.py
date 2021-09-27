@@ -12,12 +12,15 @@ import traceback
 import sys
 
 
-def single_test(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max_y = 5, vert_num = 30, neighbours_max_num = 5, agents_num = 20, vis = False):
-    
+def single_test(min_dist = 0.5, min_x = -5, max_x = 5, min_y = -5, max_y = 5, vert_num = 16, neighbours_max_num = 5, agents_num = 14, vis = False):
+
+
     positions, all_neighbours = random_generator.generate_random_graph(min_dist, min_x, max_x, min_y, max_y, vert_num, neighbours_max_num)
     g = Graph(positions, all_neighbours)
 
     a, s, t = random_generator.generate_random_agents(vert_num=vert_num, agents_num=agents_num)
+
+
     solution = None
     try:
         solver = PushAndRotateWithSizes(g, a, s, t, 0.3)

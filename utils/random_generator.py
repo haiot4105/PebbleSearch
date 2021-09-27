@@ -1,4 +1,4 @@
-# TODO writing tasks to JSON files
+# TODO writing tasks_14_16 to JSON files
 
 import random
 import kdtree
@@ -108,6 +108,14 @@ def generate_random_agents(agents_num = 20, vert_num = 30):
 
     return list(range(agents_num)), starts, goals
 
+
 def print_graph(positions, all_neighbours):
     for i in range(len(positions)):
-        print("g.add_vertex(", i, ", np.array([", positions[i][0], ",", positions[i][1], "]), {", ', '.join([str(n) for n in all_neighbours[i]]),"})")    
+        print("g.add_vertex(", i, ", np.array([", positions[i][0], ",", positions[i][1], "]), {", ', '.join([str(n) for n in all_neighbours[i]]),"})")
+
+
+def graph_to_string(positions, all_neighbours):
+    result = ""
+    for i in range(len(positions)):
+        result += "g.add_vertex(" + str(i) + ", np.array([" + str(positions[i][0]) + ", " + str(positions[i][1]) + "]), {" + ', '.join([str(n) for n in all_neighbours[i]]), "})\n"
+    return result
