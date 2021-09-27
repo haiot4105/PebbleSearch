@@ -69,6 +69,11 @@ r = 0.4
 s = {0: 0, 1: 1}
 t = {0: 2, 1: 1}
 
+positions, all_neighbours = random_generator.generate_random_graph(min_dist, min_x, max_x, min_y, max_y, vert_num, neighbours_max_num)
+g = Graph(positions, all_neighbours)
+
+a, s, t = random_generator.generate_random_agents(vert_num=vert_num, agents_num=agents_num)
+
 solution = None
 valid = False
 success = False

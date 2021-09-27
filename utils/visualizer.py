@@ -9,7 +9,7 @@ import time
 fig = plt.figure()
 fig.set_dpi(100)
 fig.set_size_inches(10, 10)
-ax = plt.axes(xlim=(0, 6), ylim=(0, 6))
+ax = plt.axes(xlim=(-6, 6), ylim=(-6, 6))
 anim = None
 
 curr_step = 0
@@ -41,15 +41,15 @@ def draw(graph, starts, solution):
     global curr_segm
     global patch
 
-    Writer = animation.writers['ffmpeg']
-    writer = Writer(fps=24, metadata=dict(artist='Me'), bitrate=2600)
+    # Writer = animation.writers['ffmpeg']
+    # writer = Writer(fps=24, metadata=dict(artist='Me'), bitrate=2600)
 
     if solution is None:
         solution = [(0, starts[0], starts[0])]
 
     patches = dict()
     for agent, start in starts.items():
-        patches[agent] = plt.Circle(graph.get_vertex_position(start), 0.4, fc='firebrick', zorder=10)
+        patches[agent] = plt.Circle(graph.get_vertex_position(start), 0.3, fc='firebrick', zorder=10)
 
     curr_step = 0
     curr_substep = 0

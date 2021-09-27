@@ -50,11 +50,11 @@ class PushAndRotateWithSizes:
         return False
 
     def plan(self, solution, agent, queue) -> bool:
-
         committed_state = self.commit_state()
         graph_backup = copy.deepcopy(self._graph)
         graph_deadlock_free_backup = copy.deepcopy(self._graph_deadlock_free)
         while True:
+            edge_removed = False
             tmp_solution = []
             self.rollback_state(committed_state)
             tmp_queue = copy.deepcopy(queue)
@@ -69,17 +69,27 @@ class PushAndRotateWithSizes:
                 v = p.pop()
 
                 if v in queue:
-                    rotate_res, queue = self.rotate(solution, queue, v)
+                    rotate_res, queue = self.rotate(tmp_solution, queue, v)
                     if not rotate_res:
                         return False
                 else:
-                    pushed, base_push_works = self.push(solution, agent, v, self.successful_agents_positions())
-                    if not pushed:
-                        if not self.swap(solution, agent, self._occupied_vertices[v]):
+                    pushed, base_push_works = self.push(tmp_solution, agent, v, self.successful_agents_positions())
+                    if not base_push_works and pushed:
+                        if not self.swap(tmp_solution, agent, self._occupied_vertices[v]):
                             return False
+                    else:
+                        edge_removed = True
+                        self._graph.discard_edge(self._agents_positions[agent], v)
+                        self._graph_deadlock_free.discard_edge(self._agents_positions[agent], v)
+                        break
 
                 queue.append(v)
-
+            
+            if edge_removed:
+                continue
+            solution += tmp_solution
+            self._graph = copy.deepcopy(graph_backup)
+            self._graph_deadlock_free = copy.deepcopy(graph_deadlock_free_backup)
             self.agent_achieve_goal(agent)
             resolve_res = self.resolve(solution, queue)
 
@@ -390,7 +400,7 @@ class PushAndRotateWithSizes:
             if v in self._occupied_vertices:
                 r = self._occupied_vertices[v]
                 if r in self._successful_agents and self._agents_positions[r] != self._goals[r]:
-                    if not self.push(solution, r, self._goals[r], self.successful_agents_positions()):
+                    if not self.push(solution, r, self._goals[r], self.successful_agents_positions())[0]:
                         s = self._occupied_vertices[self._goals[r]]
                         # print("(resolve) Rec")
                         return self.plan(solution, s, queue)
