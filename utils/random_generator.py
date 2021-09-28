@@ -1,4 +1,4 @@
-# TODO writing tasks_14_16 to JSON files
+# TODO writing tasks to JSON files
 
 import random
 import kdtree

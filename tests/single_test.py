@@ -1,36 +1,86 @@
-# TODO reading tasks_14_16 from JSON files
+# TODO reading tasks from JSON files
 
-from context import pebble_search
-from pebble_search.push_and_rotate import PushAndRotate
+import context
 from pebble_search.size_push_and_rotate import PushAndRotateWithSizes
 from pebble_search.graph import Graph as Graph
 import utils.random_generator as random_generator
 import utils.visualizer as visualizer
 from utils import is_valid_solution
 from utils import task_json_io
-
-import numpy as np
-import copy
-import traceback
+import multiprocessing
+import time
 import sys
-
-positions, all_neighbours, a, s, t, r = task_json_io.read_task_from_json("../tasks_10_16/2_task.json")
-
-g = Graph(positions, all_neighbours)
-solution = None
-valid = False
-success = False
-
-solver = PushAndRotateWithSizes(g, a, s, t, r)
-success, solution = solver.solve()
-print("solve end")
-if solution is not None:
-    valid = is_valid_solution(g, a, s, t, solution)
-print("Success:", success, "; Valid: ", valid)
-if not valid or not success:
-    random_generator.print_graph(positions, all_neighbours)
-    print(a, s, t)
-
-visualizer.draw(g, s, solution)
+import os
+import traceback
+from contextlib import redirect_stdout, redirect_stderr
 
 
+def __proccess_solver(g, a, s, t, r, ret_dict):
+    success, solution = False, None
+    try:
+        solver = PushAndRotateWithSizes(g, a, s, t, r)
+        success, solution = solver.solve()
+    except:
+        ret_dict['error'] = True
+        traceback.print_exc()
+
+    ret_dict['success'] = success
+    ret_dict['solution'] = solution
+
+
+def single_test(file_path, draw_res, timeout, redirect_output, save_log):
+    positions, all_neighbours, a, s, t, r = task_json_io.read_task_from_json(file_path)
+
+    g = Graph(positions, all_neighbours)
+    solution = None
+    valid = False
+    success = False
+    manager = multiprocessing.Manager()
+    ret_dict = manager.dict()
+    ret_dict['success'] = False
+    ret_dict['solution'] = None
+    ret_dict['error'] = False
+    ret_dict['timeout'] = False
+
+    output_file = os.devnull
+    if redirect_output:
+        if save_log:
+            output_file = os.path.splitext(file_path)[0] + "log.txt"
+
+    process = multiprocessing.Process(target=__proccess_solver, args=(g, a, s, t, r, ret_dict))
+    if redirect_output:
+        with open(output_file, 'w') as log:
+            with redirect_stdout(log):
+                with redirect_stderr(log):
+                    process.start()
+                    process.join(timeout)
+    else:
+        process.start()
+        process.join(timeout)
+
+    if process.is_alive():
+        process.terminate()
+        # sys.stdout = os.
+        print("Timeout!")
+
+    success = ret_dict['success']
+    solution = ret_dict['solution']
+    error = ret_dict['error']
+    if solution is not None:
+        valid = is_valid_solution(g, a, s, t, solution, r)
+    print("Success:", success, "; Valid:", valid, "; Error:", error)
+
+    if draw_res:
+        visualizer.draw(g, s, solution)
+    return len(a), success, valid, error
+
+
+def __main__():
+    task_path = "../tasks/5_4_task.json"
+    draw_task = True
+    timeout = 30
+    single_test(task_path, draw_task, timeout, False, False)
+
+
+if __name__ == "__main__":
+    __main__()
