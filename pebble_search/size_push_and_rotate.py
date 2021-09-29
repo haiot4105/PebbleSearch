@@ -67,7 +67,7 @@ class PushAndRotateWithSizes:
             queue.append(p.pop())
 
             while self._agents_positions[agent] != self._goals[agent]:
-                print(p)
+                # print(p)
                 v = p.pop()
 
                 if v in queue:
@@ -118,7 +118,7 @@ class PushAndRotateWithSizes:
         return self.try_move_agent(solution, agent, self._agents_positions[agent], v), True
 
     def clear_vertex(self, solution, v, blocked) -> Tuple[bool, bool]:
-        print("(clear_vertex) Start")
+        print("(clear_vertex) Start", v)
         if v in blocked:
             print("(clear_vertex) Fail")
             return False, False
@@ -142,6 +142,7 @@ class PushAndRotateWithSizes:
             pushed, blocked_edge = self.push_forward_path(tmp_solution, p, v, set())
             if pushed:
                 solution += tmp_solution
+                print("(clear_vertex) Succ")
                 return True, base_push_works
             else:
                 tmp_graph.discard_edge(*blocked_edge)
@@ -181,12 +182,12 @@ class PushAndRotateWithSizes:
             tmp_solution = []
 
             p_exists, p = self.find_path(tmp_graph_deadlock_free, tmp_graph, self._agents_positions[agent_1], v, {})
-            print(p)
+            # print(p)
             if not p_exists:
                 print("(multipush) End (f)", agent_1, agent_2, v)
                 return False
-            print((self._agents_positions[agent_1], self._agents_positions[agent_2]))
-            print(tmp_graph.get_edges())
+            # print((self._agents_positions[agent_1], self._agents_positions[agent_2]))
+            # print(tmp_graph.get_edges())
             if (self._agents_positions[agent_1], self._agents_positions[agent_2]) not in tmp_graph.get_edges() and \
                     (self._agents_positions[agent_2], self._agents_positions[agent_1]) not in tmp_graph.get_edges():
                 return False
@@ -222,7 +223,7 @@ class PushAndRotateWithSizes:
                     break
                 if not self.try_move_agent(tmp_solution, s, v_s, v_r):
                     print("second agent multipush Fail")
-                    print("Edge to discard:", v_s, v_r)
+                    # print("Edge to discard:", v_s, v_r)
                     tmp_graph.discard_edge(v_s, v_r)
                     tmp_graph_deadlock_free.discard_edge(v_s, v_r)
                     break
@@ -267,7 +268,7 @@ class PushAndRotateWithSizes:
             return False
 
         print("(clear) case 2")
-        # print(self._agents_positions)
+        print(self._agents_positions)
         eps = empty_neighbours.pop()
         committed_state = self.commit_state()
 
@@ -282,7 +283,9 @@ class PushAndRotateWithSizes:
                     return True
                 break
 
+        print(self._agents_positions)
         print("(clear) case 3")
+
         # print(self._agents_positions)
         for n in neighbours:
             print("(clear) n:", n)
@@ -290,7 +293,8 @@ class PushAndRotateWithSizes:
                 continue
             tmp_solution = []
             self.rollback_state(committed_state)
-            if not self.try_move_agent(tmp_solution, r, self._agents_positions[r], eps) or not self.try_move_agent(tmp_solution, s, self._agents_positions[s], v):
+            if not self.try_move_agent(tmp_solution, r, self._agents_positions[r], eps) or \
+                    not self.try_move_agent(tmp_solution, s, self._agents_positions[s], v):
                 continue
 
             if self.clear_vertex(tmp_solution, n, {v, eps})[0]:
@@ -299,8 +303,12 @@ class PushAndRotateWithSizes:
                     return True
                 break
 
+        self.rollback_state(committed_state)
+
+        print(self._agents_positions)
         if not self.clear_vertex(solution, v1, {v})[0]:
             return False
+
 
         if not self.try_move_agent(solution, r, self._agents_positions[r], v1):
             return False
@@ -378,8 +386,6 @@ class PushAndRotateWithSizes:
 
         for ind, v1 in enumerate(c):
             if v1 not in self._occupied_vertices:
-                print("(rotate) case 1")
-                print(c)
                 i_move_from = self.circular_buffer_index(ind - 1, len(c))
                 i_move_to = self.circular_buffer_index(ind, len(c))
 
@@ -395,7 +401,6 @@ class PushAndRotateWithSizes:
                     if c[i_move_from] == v1:
                         break
                 return True, queue
-        print("(rotate) case 2")
         for ind, v1 in enumerate(c):
             r = self._occupied_vertices[v1]
             tmp_solution = []
@@ -442,16 +447,26 @@ class PushAndRotateWithSizes:
             if v in self._occupied_vertices:
                 r = self._occupied_vertices[v]
                 if r in self._successful_agents and self._agents_positions[r] != self._goals[r]:
-                    if not self.push(solution, r, self._goals[r], self.successful_agents_positions())[0]:
-                        s = self._occupied_vertices[self._goals[r]]
-                        # print("(resolve) Rec")
-                        return self.plan(solution, s, queue)
+                    committed_state = self.commit_state()
+                    tmp_solution = []
+                    pushed, base_push_worked = self.push(tmp_solution, r, self._goals[r], self.successful_agents_positions())
+                    if not pushed:
+                        self.rollback_state(committed_state)
+                        if not base_push_worked:
+                            s = self._occupied_vertices[self._goals[r]]
+                            return self.plan(solution, s, queue)
+                        else:
+                            queue.pop()
+                            self._reached_goals.discard(self._goals[r])
+                            self._successful_agents.discard(r)
+                            return self.plan(solution, r, queue)
+                    solution += tmp_solution
             queue.pop()
         # print("(resolve) End")
         return True
 
     def reverse(self, solution, tail, agent_1=None, agent_2=None) -> None:
-        print("(reverse)", tail)
+        # print("(reverse)", tail)
         for move in reversed(tail):
             if agent_1 is not None and move[0] == agent_1:
                 self.move_agent(solution, agent_2, move[2], move[1])
@@ -491,26 +506,27 @@ class PushAndRotateWithSizes:
 
     def try_move_agent(self, solution, agent, v_from, v_to, blocked = set()) -> bool:
         print("\t(try move) Agent:", agent, "from", v_from, "to", v_to)
+        self.check_move_tech(agent, v_from, v_to)
         tmp_solution = []
-        if self.clear_edge(tmp_solution, agent, v_from, v_to, blocked):
-            solution += tmp_solution
-            self.move_agent(solution, agent, v_from, v_to)
-            self.reverse(solution, tmp_solution)
-            print("\t(try move) Succ:", agent, "from", v_from, "to", v_to)
-            return True
-        else:
-            cleared, sol_1, sol_2, sol_3 = self.clear_deadlock_edge(tmp_solution, agent, v_from, v_to, blocked)
-            if not cleared:
-                print("\t(try_move) Fail", agent, "from", v_from, "to", v_to)
-                return False
-            solution += tmp_solution
-            self.move_agent(solution, agent, v_from, v_to)
-            # print(sol_3)
-            # print(sol_1)
-            self.reverse(solution, sol_3)
-            self.reverse(solution, sol_1)
-            print("\t(try move) Succ:", agent, "from", v_from, "to", v_to)
-            return True
+        # if self.clear_edge(tmp_solution, agent, v_from, v_to, blocked):
+        #     solution += tmp_solution
+        #     self.move_agent(solution, agent, v_from, v_to)
+        #     self.reverse(solution, tmp_solution)
+        #     print("\t(try move) Succ:", agent, "from", v_from, "to", v_to)
+        #     return True
+        # else:
+        cleared, sol_1, sol_2, sol_3 = self.clear_deadlock_edge(tmp_solution, agent, v_from, v_to, blocked)
+        if not cleared:
+            print("\t(try_move) Fail", agent, "from", v_from, "to", v_to)
+            return False
+        solution += tmp_solution
+        self.move_agent(solution, agent, v_from, v_to)
+        # print(sol_3)
+        # print(sol_1)
+        self.reverse(solution, sol_3)
+        self.reverse(solution, sol_1)
+        print("\t(try move) Succ:", agent, "from", v_from, "to", v_to)
+        return True
 
     def clear_edge(self, solution, agent, v_from, v_to, blocked) -> bool:
         print("(clear_edge) from, to", v_from, v_to)
@@ -557,6 +573,7 @@ class PushAndRotateWithSizes:
         p_exists, p = self.find_path_to_empty_vertex(tmp_graph_deadlock_free, tmp_graph, v, tmp_empty, blocked)
 
         if not p_exists:
+            print("(clear_interfere_vertex) fail from, to, interf", v_from, v_to, v)
             return False
 
         return self.push_forward_path(solution, p, v, blocked)[0]
@@ -568,7 +585,7 @@ class PushAndRotateWithSizes:
         blocked |= {v_from, v_to}
         unoccupied_blocked = set()
         interfere_v = self.get_interfere_vertices(v_from, v_to)
-        # print("(clear_deadlock_edge) interfere_v", interfere_v)
+
         for v in interfere_v:
             if v not in self._occupied_vertices:
                 unoccupied_blocked.add(v)
@@ -602,7 +619,8 @@ class PushAndRotateWithSizes:
                 is_cleared, agent_solution, other_solution = self.clear_deadlock_interfere_vertex(tmp_solution, v, blocked, unoccupied_blocked, v_from, v_to)
                 if not is_cleared:
                     self.rollback_state(first_committed_state)
-                    # print("(clear_deadlock_interfere_vertex) fail. vertex", v)
+                    print("(clear_deadlock_interfere_vertex) fail. vertex", v)
+                    print("(clear_deadlock_edge) fail. from to", v_from, v_to)
                     return False, None, None, None
                 self.reverse(tmp_solution, agent_solution)
                 unoccupied_blocked.add(v)
@@ -621,6 +639,7 @@ class PushAndRotateWithSizes:
             if v_from in self._occupied_vertices:
                 agent = self._occupied_vertices[v_from]
                 if not self.try_move_agent(solution, agent, v_from, v_to, blocked):
+                    # print("push path fail")
                     return False, (v_from, v_to)
                 v_to = v_from
             else:
@@ -637,6 +656,7 @@ class PushAndRotateWithSizes:
                 agent = self._occupied_vertices[tmp_v_from]
                 while True:
                     if not self.try_move_agent(solution, agent, tmp_v_from, tmp_v_to, blocked):
+                        print("push path fail")
                         return False, (tmp_v_from, tmp_v_to)
                     if tmp_v_to == v_to:
                         v_to = tmp_v
@@ -647,7 +667,7 @@ class PushAndRotateWithSizes:
         return True, None
 
     def clear_deadlock_interfere_vertex(self, solution, v, blocked, unoccupied_blocked, v_from, v_to) -> Tuple[bool, Optional[List[Tuple[int, int, int]]], Optional[List[Tuple[int, int, int]]]]:
-        print("(clear_deadlock_interfere_vertex) Start")
+        print("(clear_deadlock_interfere_vertex) Start from, to, iner", v_from, v_to, v)
         tmp_empty = set()
         agent = self._occupied_vertices[v_from]
         p_from = self._graph.get_vertex_position(v_from)
@@ -685,7 +705,7 @@ class PushAndRotateWithSizes:
             agent_solution = []
             other_solution = []
 
-            if not self.push_forward_path(agent_solution, p, v_from, set()):
+            if not self.push_forward_path(agent_solution, p, v_from, set())[0]:
                 self.rollback_state(committed_state)
                 # print("(clear_deadlock_interfere_vertex) empty goal path not executed")
                 continue
@@ -702,21 +722,10 @@ class PushAndRotateWithSizes:
                 if self.check_suspect_vertex(p_from, p_to, eps_2):
                     continue
                 tmp_empty_2.add(eps_2)
-            # print("unoccupied_blocked", unoccupied_blocked)
-            # print("agent_pos", agent_pos)
-            # print("interfere_pos", interfere_pos)
-            # print("other_pos", other_pos)
-            # print("empty goals 2", tmp_empty_2)
+
             tmp_blocked = blocked | (other_pos - self._empty_vertices)
             tmp_blocked.add(self._agents_positions[agent])
             tmp_blocked.discard(v_from)
-
-            # print(tmp_blocked)
-            # print(tmp_empty_2)
-            # print(v)
-            # print(tmp_graph.get_edges())
-            # print(tmp_graph.neighbours)
-
             tmp_graph_2 = copy.deepcopy(tmp_graph)
             tmp_graph_deadlock_free_2 = copy.deepcopy(tmp_graph_deadlock_free)
 
@@ -730,19 +739,20 @@ class PushAndRotateWithSizes:
 
             p_exists, p = self.find_path_to_empty_vertex(tmp_graph_deadlock_free_2, tmp_graph_2, v, tmp_empty_2, tmp_blocked)
             if not p_exists:
-                # print("(clear_deadlock_interfere_vertex) interfere agent path not found")
+                print("(clear_deadlock_interfere_vertex) interfere agent path not found")
                 self.rollback_state(committed_state)
                 continue
 
-            if not self.push_forward_path(other_solution, p, v, blocked):
+            if not self.push_forward_path(other_solution, p, v, blocked)[0]:
                 self.rollback_state(committed_state)
                 continue
 
             solution += agent_solution
             solution += other_solution
-            # print("(clear_deadlock_interfere_vertex) clear vertex deadlock end")
+            print("(clear_deadlock_interfere_vertex) succ from, to, iner", v_from, v_to, v)
             return True, agent_solution, other_solution
 
+        print("(clear_deadlock_interfere_vertex) fail from, to, iner", v_from, v_to, v)
         return False, None, None
 
     def split_positions_from_solution(self, solution, agent) -> Tuple[Set[int], Set[int], Set[int]]:

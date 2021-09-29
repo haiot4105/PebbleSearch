@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 from scipy.spatial import KDTree
 
@@ -36,25 +38,25 @@ class Graph:
         self.kd_tree = KDTree(kd_pos)
 
     def get_vertex_position(self, v_id):
-        return self.positions[v_id]
+        return copy.deepcopy(self.positions[v_id])
 
     def get_vertices(self):
-        return self.vertices
+        return copy.deepcopy(self.vertices)
 
     def get_edges(self):
-        return self.edges
+        return copy.deepcopy(self.edges)
 
     def get_euclidian_distance(self, v1_id, v2_id):
         return np.linalg.norm(self.positions[v1_id] - self.positions[v2_id])
 
     def get_neighbours(self, v_id):
-        return self.neighbours[v_id]
+        return copy.deepcopy(self.neighbours[v_id])
 
     def __iter__(self):
         return iter(self.vertices)
 
     def get_vertices_degree_geq_3(self):
-        return self.degreegeq3
+        return copy.deepcopy(self.degreegeq3)
 
     def discard_edge(self, v1_id, v2_id):
         self.neighbours[v1_id].discard(v2_id)

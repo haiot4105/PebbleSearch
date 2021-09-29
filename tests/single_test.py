@@ -47,6 +47,7 @@ def single_test(file_path, draw_res, timeout, redirect_output, save_log):
         if save_log:
             output_file = os.path.splitext(file_path)[0] + "log.txt"
 
+
     process = multiprocessing.Process(target=__proccess_solver, args=(g, a, s, t, r, ret_dict))
     if redirect_output:
         with open(output_file, 'w') as log:
@@ -76,10 +77,12 @@ def single_test(file_path, draw_res, timeout, redirect_output, save_log):
 
 
 def __main__():
-    task_path = "../tasks/5_4_task.json"
+    task_path = "../tasks/11_2_task.json"
     draw_task = True
     timeout = 30
-    single_test(task_path, draw_task, timeout, False, False)
+    redirect_output = False
+    save_log = False
+    single_test(task_path, draw_task, timeout, redirect_output, save_log)
 
 
 if __name__ == "__main__":
