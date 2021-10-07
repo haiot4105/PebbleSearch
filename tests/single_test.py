@@ -62,6 +62,7 @@ def single_test(file_path, draw_res, timeout, redirect_output, save_log):
     if process.is_alive():
         process.terminate()
         # sys.stdout = os.
+        ret_dict['error'] = True
         print("Timeout!")
 
     success = ret_dict['success']
@@ -78,7 +79,7 @@ def single_test(file_path, draw_res, timeout, redirect_output, save_log):
 
 def __main__():
     task_path = "../tasks/11_2_task.json"
-    draw_task = True
+    draw_task = False
     timeout = 30
     redirect_output = False
     save_log = False
