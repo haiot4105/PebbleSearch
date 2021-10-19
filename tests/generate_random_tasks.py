@@ -35,7 +35,7 @@ def main():
     min_agents_num = 5
     step_agents_num = 1
     ag_size: Final = 0.3
-    task_num = 20
+    task_num = 40
     task_dir = "../tasks/"
 
     for i in range(task_num):

@@ -715,8 +715,8 @@ class PushAndRotateWithSizes:
             other_solution = []
 
             print("(clear_deadlock_interfere_vertex) empty goal path")
-            # Error was here!
-            if not self.push_forward_path(agent_solution, p, v_from, {v_from, v_to})[0]:
+            # Error was here! {v_from, v_to}
+            if not self.push_forward_path(agent_solution, p, v_from, blocked)[0]:
                 self.rollback_state(committed_state)
                 print("(clear_deadlock_interfere_vertex) empty goal path not executed")
                 continue
