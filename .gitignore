@@ -1,7 +1,12 @@
 .vscode/
 .idea/
+.DS_Store
 __pycache__/
 pebble_search/__pycache__/
 tests/__pycache__/
 utils/__pycache__/
 *.mp4
+tasks/*tasklog.txt
+tasks/result.txt
+tasks/xml/result.txt
+tasks/xml/*_log.xml

@@ -3,7 +3,7 @@ import json
 import numpy as np
 import utils.random_generator as random_generator
 from typing import Final
-from utils import task_json_io
+from utils import task_io
 
 def get_first_n_agents_from_task(n, a, s, t):
     a_n = a[:n]

@@ -681,12 +681,13 @@ class PushAndRotateWithSizes:
         p_from = self._graph.get_vertex_position(v_from)
         p_to = self._graph.get_vertex_position(v_to)
 
-        for eps in self._empty_vertices:
-            if eps in unoccupied_blocked:
-                continue
-            if self.check_suspect_vertex(p_from, p_to, eps):
-                continue
-            tmp_empty.add(eps)
+        tmp_empty = copy.deepcopy(self._empty_vertices)
+        # for eps in self._empty_vertices:
+        #     if eps in unoccupied_blocked:
+        #         continue
+        #     if self.check_suspect_vertex(p_from, p_to, eps):
+        #         continue
+        #     tmp_empty.add(eps)
 
         tmp_graph = copy.deepcopy(self._graph)
         tmp_graph_deadlock_free = copy.deepcopy(self._graph_deadlock_free)
@@ -701,13 +702,13 @@ class PushAndRotateWithSizes:
 
         committed_state = self.commit_state()
         # print("empty goals", tmp_empty | (unoccupied_blocked & self._graph.get_neighbours(v_from)))
-        for eps in tmp_empty | (unoccupied_blocked & self._graph.get_neighbours(v_from)):
-
+        # for eps in tmp_empty | (unoccupied_blocked & self._graph.get_neighbours(v_from)):
+        for eps in tmp_empty:
             # print("empty goal", eps)
             print("blocked", blocked)
             p_exists, p = self.find_path(tmp_graph_deadlock_free, tmp_graph, v_from, eps, blocked)
             print("path", p)
-            if not p_exists or (len(p) > 2 and eps in unoccupied_blocked):
+            if not p_exists: # or (len(p) > 2 and eps in unoccupied_blocked):
                 # print("(clear_deadlock_interfere_vertex) empty goal path not found")
                 continue
 
@@ -740,13 +741,13 @@ class PushAndRotateWithSizes:
             tmp_graph_2 = copy.deepcopy(tmp_graph)
             tmp_graph_deadlock_free_2 = copy.deepcopy(tmp_graph_deadlock_free)
 
-            for e in tmp_graph.get_edges():
-                p1 = self._graph.get_vertex_position(e[0])
-                p2 = self._graph.get_vertex_position(e[1])
-                if self.check_suspect_vertex(p1, p2, eps):
-                    # print("discard edge 2", e)
-                    tmp_graph_2.discard_edge(*e)
-                    tmp_graph_deadlock_free_2.discard_edge(*e)
+            # for e in tmp_graph.get_edges():
+            #     p1 = self._graph.get_vertex_position(e[0])
+            #     p2 = self._graph.get_vertex_position(e[1])
+            #     if self.check_suspect_vertex(p1, p2, eps):
+            #         # print("discard edge 2", e)
+            #         tmp_graph_2.discard_edge(*e)
+            #         tmp_graph_deadlock_free_2.discard_edge(*e)
 
             p_exists, p = self.find_path_to_empty_vertex(tmp_graph_deadlock_free_2, tmp_graph_2, v, tmp_empty_2, tmp_blocked)
             if not p_exists:
@@ -815,17 +816,6 @@ class PushAndRotateWithSizes:
         if v_to not in self._graph.get_neighbours(v_from):
             print("Error: move to vertex without edge!", agent, v_from, v_to)
             exit()
-    #
-    # def check_move_conc(self, agent, v_from, v_to):
-    #     if v_to in self._occupied_vertices:
-    #         print("Error: move to occupied position!", agent, v_from, v_to)
-    #         exit()
-
-
-        # if self.goals[agent] == v_from and v_from in self.reached_goals:
-        #     print(self.debug_prefix,  "Alert! Agent ", agent, "moved from goal!")
-        # if self.goals[agent] == v_to and v_to in self.reached_goals:
-        #     print(self.debug_prefix,  "Alert! Agent ", agent, "moved back to goal!")
 
     def find_deadlock_edges(self) -> Set[Tuple[int, int]]:
         result = set()

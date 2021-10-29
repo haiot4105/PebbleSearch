@@ -6,7 +6,7 @@ from pebble_search.graph import Graph as Graph
 import utils.random_generator as random_generator
 import utils.visualizer as visualizer
 from utils import is_valid_solution
-from utils import task_json_io
+from utils import task_io
 import multiprocessing
 import time
 import sys
@@ -18,8 +18,10 @@ from contextlib import redirect_stdout, redirect_stderr
 def __proccess_solver(g, a, s, t, r, ret_dict):
     success, solution = False, None
     try:
-        solver = PushAndRotateWithSizes(g, a, s, t, r)
-        success, solution = solver.solve()
+        with redirect_stdout(None):
+            with redirect_stderr(None):
+                solver = PushAndRotateWithSizes(g, a, s, t, r)
+                success, solution = solver.solve()
     except:
         ret_dict['error'] = True
         traceback.print_exc()
@@ -29,7 +31,7 @@ def __proccess_solver(g, a, s, t, r, ret_dict):
 
 
 def single_test(file_path, draw_res, timeout, redirect_output, save_log):
-    positions, all_neighbours, a, s, t, r = task_json_io.read_task_from_json(file_path)
+    positions, all_neighbours, a, s, t, r = task_io.read_task_from_json(file_path)
 
     g = Graph(positions, all_neighbours)
     solution = None
@@ -47,12 +49,17 @@ def single_test(file_path, draw_res, timeout, redirect_output, save_log):
         if save_log:
             output_file = os.path.splitext(file_path)[0] + "log.txt"
 
-
     process = multiprocessing.Process(target=__proccess_solver, args=(g, a, s, t, r, ret_dict))
     if redirect_output:
-        with open(output_file, 'w') as log:
-            with redirect_stdout(log):
-                with redirect_stderr(log):
+        if save_log:
+            with open(output_file, 'w') as log:
+                with redirect_stdout(log):
+                    with redirect_stderr(log):
+                        process.start()
+                        process.join(timeout)
+        else:
+            with redirect_stdout(None):
+                with redirect_stderr(None):
                     process.start()
                     process.join(timeout)
     else:

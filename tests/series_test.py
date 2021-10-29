@@ -17,7 +17,7 @@ def __main__():
     task_dir = "../tasks/"
     timeout_per_task = 30
     redirect_output = True
-    save_log = True
+    save_log = False
     series_test(task_dir, timeout_per_task, "../tasks/result.txt", redirect_output, save_log)
 
 
