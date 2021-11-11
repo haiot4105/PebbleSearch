@@ -2,8 +2,9 @@
 
 import context
 from pebble_search.size_push_and_rotate import PushAndRotateWithSizes
+# from pebble_search.push_and_rotate import PushAndRotate
 from pebble_search.graph import Graph as Graph
-import utils.random_generator as random_generator
+# import utils.random_generator as random_generator
 import utils.visualizer as visualizer
 from utils import is_valid_solution
 from utils import task_io
@@ -15,12 +16,21 @@ import traceback
 from contextlib import redirect_stdout, redirect_stderr
 
 
-def __proccess_solver(g, a, s, t, r, ret_dict):
+def __proccess_solver(g, a, s, t, r, redirect_output, save_log, file_path, ret_dict):
     success, solution = False, None
     try:
-        with redirect_stdout(None):
-            with redirect_stderr(None):
+        log = sys.stdout 
+        if redirect_output:
+            if save_log:
+                output_file = os.path.splitext(file_path)[0] + "log.txt"
+                log = open(output_file, 'w')
+            else:
+                log = None
+            
+        with redirect_stdout(log):
+            with redirect_stderr(log):
                 solver = PushAndRotateWithSizes(g, a, s, t, r)
+                # solver = PushAndRotate(g, a, s, t)
                 success, solution = solver.solve()
     except:
         ret_dict['error'] = True
@@ -49,22 +59,9 @@ def single_test(file_path, draw_res, timeout, redirect_output, save_log):
         if save_log:
             output_file = os.path.splitext(file_path)[0] + "log.txt"
 
-    process = multiprocessing.Process(target=__proccess_solver, args=(g, a, s, t, r, ret_dict))
-    if redirect_output:
-        if save_log:
-            with open(output_file, 'w') as log:
-                with redirect_stdout(log):
-                    with redirect_stderr(log):
-                        process.start()
-                        process.join(timeout)
-        else:
-            with redirect_stdout(None):
-                with redirect_stderr(None):
-                    process.start()
-                    process.join(timeout)
-    else:
-        process.start()
-        process.join(timeout)
+    process = multiprocessing.Process(target=__proccess_solver, args=(g, a, s, t, r, redirect_output, save_log, file_path, ret_dict))
+    process.start()
+    process.join(timeout)
 
     if process.is_alive():
         process.terminate()
@@ -85,11 +82,11 @@ def single_test(file_path, draw_res, timeout, redirect_output, save_log):
 
 
 def __main__():
-    task_path = "../tasks/12_19_task.json"
+    task_path = "../tasks/6_28_task.json"
     draw_task = False
     timeout = 30
-    redirect_output = False
-    save_log = False
+    redirect_output = True
+    save_log = True
     single_test(task_path, draw_task, timeout, redirect_output, save_log)
 
 

@@ -181,7 +181,7 @@ class PushAndRotateWithSizes:
 
         while True:
 
-            print("(multipush) try with graph:", tmp_graph.get_edges())
+            # print("(multipush) try with graph:", tmp_graph.get_edges())
             self.rollback_state(committed_state)
             tmp_solution = []
 
@@ -532,27 +532,27 @@ class PushAndRotateWithSizes:
         # print("\t(try move) Succ:", agent, "from", v_from, "to", v_to)
         return True
 
-    def clear_edge(self, solution, agent, v_from, v_to, blocked) -> bool:
-        print("(clear_edge) from, to", v_from, v_to)
-        blocked |= {v_from, v_to}
-        unoccupied_blocked = set()
-        interfere_v = self.get_interfere_vertices(v_from, v_to)
+    # def clear_edge(self, solution, agent, v_from, v_to, blocked) -> bool:
+    #     print("(clear_edge) from, to", v_from, v_to)
+    #     blocked |= {v_from, v_to}
+    #     unoccupied_blocked = set()
+    #     interfere_v = self.get_interfere_vertices(v_from, v_to)
 
-        for v in interfere_v:
-            if v not in self._occupied_vertices:
-                unoccupied_blocked.add(v)
+    #     for v in interfere_v:
+    #         if v not in self._occupied_vertices:
+    #             unoccupied_blocked.add(v)
 
-        committed_state = self.commit_state()
-        for v in interfere_v:
-            if v in self._occupied_vertices and \
-                    not self.clear_interfere_vertex(solution, v, blocked, unoccupied_blocked, v_from, v_to):
-                self.rollback_state(committed_state)
-                return False
-            unoccupied_blocked.add(v)
-        return True
+    #     committed_state = self.commit_state()
+    #     for v in interfere_v:
+    #         if v in self._occupied_vertices and \
+    #                 not self.clear_interfere_vertex(solution, v, blocked, unoccupied_blocked, v_from, v_to):
+    #             self.rollback_state(committed_state)
+    #             return False
+    #         unoccupied_blocked.add(v)
+    #     return True
 
     def clear_interfere_vertex(self, solution, v, blocked, unoccupied_blocked, v_from, v_to) -> bool:
-        # print("(clear_interfere_vertex) from, to, interf", v_from, v_to, v)
+        print("(clear_interfere_vertex) from, to, interf", v_from, v_to, v)
         tmp_empty = set()
         p_from = self._graph.get_vertex_position(v_from)
         p_to = self._graph.get_vertex_position(v_to)
@@ -574,22 +574,29 @@ class PushAndRotateWithSizes:
                 tmp_graph.discard_edge(*e)
                 tmp_graph_deadlock_free.discard_edge(*e)
 
-        p_exists, p = self.find_path_to_empty_vertex(tmp_graph_deadlock_free, tmp_graph, v, tmp_empty, blocked)
+        commited_state = self.commit_state()
+        for eps in tmp_empty:
+            p_exists, p = self.find_path(tmp_graph_deadlock_free, tmp_graph, v, eps, blocked)
+            print("goal", eps, "path", p)
+            if not p_exists:
+                continue
+            tmp_solution = []
 
-        if not p_exists:
-            # print("(clear_interfere_vertex) fail from, to, interf", v_from, v_to, v)
-            return False
-
-        return self.push_forward_path(solution, p, v, blocked)[0]
+            if self.push_forward_path(tmp_solution, p, v, blocked)[0]:
+                solution += tmp_solution
+                return True
+            self.rollback_state(commited_state)
+            
+        return False
 
     def clear_deadlock_edge(self, solution, agent, v_from, v_to, blocked) -> Tuple[bool, Optional[List[Tuple[int, int, int]]], Optional[List[Tuple[int, int, int]]], Optional[List[Tuple[int, int, int]]]]:
         print(self._debug_prefix, "(clear_deadlock_edge) Start. from to", v_from, v_to)
         self._debug_prefix += " "
         cleared = set()
         not_cleared = set()
-        print("blocked before", blocked)
+        # print("blocked before", blocked)
         blocked |= {v_from, v_to}
-        print("blocked after", blocked)
+        # print("blocked after", blocked)
         unoccupied_blocked = set()
         interfere_v = self.get_interfere_vertices(v_from, v_to)
 
@@ -705,9 +712,9 @@ class PushAndRotateWithSizes:
         # for eps in tmp_empty | (unoccupied_blocked & self._graph.get_neighbours(v_from)):
         for eps in tmp_empty:
             # print("empty goal", eps)
-            print("blocked", blocked)
+            # print("blocked", blocked)
             p_exists, p = self.find_path(tmp_graph_deadlock_free, tmp_graph, v_from, eps, blocked)
-            print("path", p)
+            # print("path", p)
             if not p_exists: # or (len(p) > 2 and eps in unoccupied_blocked):
                 # print("(clear_deadlock_interfere_vertex) empty goal path not found")
                 continue

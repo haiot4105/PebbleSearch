@@ -4,7 +4,7 @@ from .geom import dist_point_line_segment
 from pebble_search import Graph
 from typing import Dict
 
-def is_valid_solution(graph, agents, starts, goals, solution, size):
+def is_valid_solution(graph, agents, starts, goals, solution, size, check_size = True):
 	if solution is None:
 		print("Solution not found")
 
@@ -31,7 +31,7 @@ def is_valid_solution(graph, agents, starts, goals, solution, size):
 		if v_to not in graph.get_neighbours(v_from):
 			print("Error: move to vertex without edge!", agent, v_from, v_to)
 			return False
-		if not check_collision(graph, v_from, v_to, size, occupied_vertices):
+		if check_size and  not check_collision(graph, v_from, v_to, size, occupied_vertices):
 			print("Error: move to vertex with collision!", agent, v_from, v_to)
 			return False
 		empty_vertices.add(v_from)
