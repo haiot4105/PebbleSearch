@@ -18,9 +18,10 @@ def save_tasks_to_xml(task_dir, output_dir):
 
 
 def __main__():
-    task_dir = "../tasks/"
-    output_dir = "../tasks/xml/"
-    save_tasks_to_xml(task_dir, output_dir)
+    # task_dir = "../tasks/"
+    # output_dir = "../tasks/xml/"
+    # save_tasks_to_xml(task_dir, output_dir)
+    task_io.save_task_to_xml("../tasks/xml/9_14_task", *task_io.read_task_from_json("../tasks/9_14_task.json"))
 
 
 if __name__ == "__main__":

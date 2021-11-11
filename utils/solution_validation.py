@@ -18,7 +18,7 @@ def is_valid_solution(graph, agents, starts, goals, solution, size, check_size =
 		empty_vertices.remove(vert)
 
 	step = 0
-	for agent, v_from, v_to in solution:
+	for agent, v_from, v_to, rev in solution:
 		step += 1
 		# print(step)
 		# print("\t(move) Agent:", agent, "from", v_from, "to", v_to)
@@ -31,7 +31,7 @@ def is_valid_solution(graph, agents, starts, goals, solution, size, check_size =
 		if v_to not in graph.get_neighbours(v_from):
 			print("Error: move to vertex without edge!", agent, v_from, v_to)
 			return False
-		if check_size and  not check_collision(graph, v_from, v_to, size, occupied_vertices):
+		if check_size and not check_collision(graph, v_from, v_to, size, occupied_vertices):
 			print("Error: move to vertex with collision!", agent, v_from, v_to)
 			return False
 		empty_vertices.add(v_from)
