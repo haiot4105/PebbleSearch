@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<root>
+	<algorithm>
+		<use_cardinal>false</use_cardinal>
+		<use_disjoint_splitting>true</use_disjoint_splitting>
+		<hlh_type>0</hlh_type>
+		<connectedness>3</connectedness>
+		<focal_weight>10.0</focal_weight>
+		<agent_size>0.3</agent_size>
+		<timelimit>300</timelimit>
+		<precision>0.0000001</precision>
+	</algorithm>
+</root>
