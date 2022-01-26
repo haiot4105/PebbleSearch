@@ -18,7 +18,7 @@ def __main__():
     timeout_per_task = 30
     redirect_output = True
     save_log = False
-    series_test(task_dir, timeout_per_task, "../tasks/result.txt", redirect_output, save_log)
+    series_test(task_dir, timeout_per_task, "../tasks/result_new_6.txt", redirect_output, save_log)
 
 
 if __name__ == "__main__":

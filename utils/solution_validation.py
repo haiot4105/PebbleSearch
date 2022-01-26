@@ -18,7 +18,7 @@ def is_valid_solution(graph, agents, starts, goals, solution, size, check_size =
 		empty_vertices.remove(vert)
 
 	step = 0
-	for agent, v_from, v_to, rev in solution:
+	for agent, v_from, v_to in solution:
 		step += 1
 		# print(step)
 		# print("\t(move) Agent:", agent, "from", v_from, "to", v_to)

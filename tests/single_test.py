@@ -82,11 +82,11 @@ def single_test(file_path, draw_res, timeout, redirect_output, save_log):
 
 
 def __main__():
-    task_path = "../tasks/11_19_task.json"
+    task_path = "../tasks/13_10_task.json"
     draw_task = True
     timeout = 30
-    redirect_output = True
-    save_log = True
+    redirect_output = False
+    save_log = False
     single_test(task_path, draw_task, timeout, redirect_output, save_log)
 
 

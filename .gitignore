@@ -8,5 +8,6 @@ utils/__pycache__/
 *.mp4
 tasks/*tasklog.txt
 tasks/result.txt
+tasks/*.txt
 tasks/xml/result.txt
 tasks/xml/*_log.xml
