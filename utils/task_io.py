@@ -3,7 +3,9 @@ from multiprocessing import Array
 import numpy as np
 import xml.etree.ElementTree as et
 from typing import Dict, List, Tuple
+from numpy.lib.stride_tricks import _sliding_window_view_dispatcher
 import numpy.typing  as npt
+from math import sqrt
 
 
 class MyEncoder(json.JSONEncoder):
@@ -162,7 +164,65 @@ def save_task_to_xml(file_name, positions, all_neighbours, a, s, t, size):
     tree = et.ElementTree(graphml)
     tree.write(map_file_name, xml_declaration=True, encoding='utf-8')
 
+
+def read_task_from_xml(map_file, task_file):
     
+    tree = et.parse(map_file)
+    root = tree.getroot()
+    prefix = "{http://graphml.graphdrawing.org/xmlns}"
+
+    graph = root.find(prefix+"graph")
+
+    all_neighbours = dict()
+    positions = dict()
+
+    for node in graph.findall(prefix+"node"):
+        node_id = int(node.attrib.get("id")[1:])
+        node_coord = np.array(list(map(float, node.find(prefix+"data").text.split(","))))
+        all_neighbours[node_id] = set()
+        positions[node_id] = node_coord
+        print(node_id, node_coord)
+
+    
+    for edge in graph.findall(prefix+"edge"):
+        v_from = int(edge.attrib.get("source")[1:])
+        v_to = int(edge.attrib.get("target")[1:])
+        all_neighbours[v_from].add(v_to)
+        all_neighbours[v_to].add(v_from)
+
+    
+    tree = et.parse(task_file)
+    root = tree.getroot()
+
+    agents = list()
+    starts = dict()
+    goals = dict()
+    
+    
+    for id, agent in enumerate(root.findall("agent")):
+        agents.append(id)
+        v_from = int(agent.attrib.get("start_id"))
+        v_to = int(agent.attrib.get("goal_id"))
+        starts[id] = v_from
+        goals[id] = v_to
+
+    size = sqrt(2)/4
+
+    return positions, all_neighbours, agents, starts, goals, size
+    
+    # <log>
+        # <summary time="0.0084526099999999993" flowtime="34.357036595661512" makespan="16.457818253324106"/>
+
+def read_xml_ccbs_results(result_file):
+    tree = et.parse(result_file)
+    root = tree.getroot()
+    log = root.find("log")
+    summary = log.find("summary")
+    runtime = float(summary.attrib.get("time"))
+    flowtime = float(summary.attrib.get("flowtime"))
+    makespan = float(summary.attrib.get("makespan"))
+
+    return runtime, flowtime, makespan
 
 
 

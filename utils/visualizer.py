@@ -9,7 +9,8 @@ import time
 fig = plt.figure()
 fig.set_dpi(100)
 fig.set_size_inches(10, 10)
-ax = plt.axes(xlim=(-6, 6), ylim=(-6, 6))
+# ax = plt.axes(xlim=(-6, 6), ylim=(-6, 6))
+ax = plt.axes(xlim=(0, 256), ylim=(0, 256))
 anim = None
 
 curr_step = 0
@@ -77,7 +78,7 @@ def draw(graph, starts, solution):
         for v in graph:
             circle = plt.Circle(graph.get_vertex_position(v), 0.15, color='cornflowerblue')
             ax.add_patch(circle)
-            ax.text(*graph.get_vertex_position(v), str(v), fontweight='bold',zorder=10)
+            # ax.text(*graph.get_vertex_position(v), str(v), fontweight='bold',zorder=10)
 
         for e in graph.get_edges():
             p1, p2 = graph.get_vertex_position(e[0]), graph.get_vertex_position(e[1])
@@ -143,12 +144,13 @@ def draw(graph, starts, solution):
     if solution == [(0, starts[0], starts[0])]:
         init()
     else:
-        anim = animation.FuncAnimation(fig, animate,
-                                    init_func=init,
-                                    frames=None,
-                                    interval=100,
-                                    blit=False,
-                                    repeat=False)
+        init()
+        # anim = animation.FuncAnimation(fig, animate,
+        #                             init_func=init,
+        #                             frames=None,
+        #                             interval=100,
+        #                             blit=False,
+        #                             repeat=False)
     # anim.save("test.mp4", writer=writer)
     plt.show()
     print("Saved")

@@ -49,7 +49,7 @@ def __main__():
     if len(sys.argv) < 3:
         print("Not enough command line arguments. Paths to binary and to config file were expected")
         exit()
-    task_dir = "../tasks/xml/"
+    task_dir = "../tasks/40_small_graphs/xml_7/"
     print("Bin file", sys.argv[1])
     print("Config file", sys.argv[2])
     bin_file = sys.argv[1]

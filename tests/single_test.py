@@ -2,6 +2,7 @@
 
 import context
 from pebble_search.size_push_and_rotate import PushAndRotateWithSizes
+from pebble_search.size_push_and_rotate_base import SizePushAndRotateBase
 # from pebble_search.push_and_rotate import PushAndRotate
 from pebble_search.graph import Graph as Graph
 # import utils.random_generator as random_generator
@@ -14,10 +15,12 @@ import sys
 import os
 import traceback
 from contextlib import redirect_stdout, redirect_stderr
+import numpy as np
 
 
 def __proccess_solver(g, a, s, t, r, redirect_output, save_log, file_path, ret_dict):
     success, solution = False, None
+    runtime = 0
     try:
         log = sys.stdout 
         if redirect_output:
@@ -29,16 +32,26 @@ def __proccess_solver(g, a, s, t, r, redirect_output, save_log, file_path, ret_d
             
         with redirect_stdout(log):
             with redirect_stderr(log):
+                
                 solver = PushAndRotateWithSizes(g, a, s, t, r)
+                # solver = SizePushAndRotateBase(g, a, s, t, r)
                 # solver = PushAndRotate(g, a, s, t)
+                start_time = time.time()
                 success, solution = solver.solve()
+                runtime = time.time() - start_time
     except:
         ret_dict['error'] = True
         traceback.print_exc()
 
     ret_dict['success'] = success
     ret_dict['solution'] = solution
+    ret_dict['runtime'] = runtime
 
+def compute_flowtime(solution, positions):
+    flowtime = 0
+    for agent, v_from, v_to in solution:
+        flowtime += np.linalg.norm(positions[v_from] - positions[v_to])
+    return flowtime
 
 def single_test(file_path, draw_res, timeout, redirect_output, save_log):
     positions, all_neighbours, a, s, t, r = task_io.read_task_from_json(file_path)
@@ -53,6 +66,7 @@ def single_test(file_path, draw_res, timeout, redirect_output, save_log):
     ret_dict['solution'] = None
     ret_dict['error'] = False
     ret_dict['timeout'] = False
+    ret_dict['runtime'] = 0
 
     output_file = os.devnull
     if redirect_output:
@@ -72,20 +86,27 @@ def single_test(file_path, draw_res, timeout, redirect_output, save_log):
     success = ret_dict['success']
     solution = ret_dict['solution']
     error = ret_dict['error']
+    runtime = ret_dict['runtime']
+    flowtime = 0
+    makespan = 0
+
+    
+
     if solution is not None:
         valid = is_valid_solution(g, a, s, t, solution, r)
-    print("Success:", success, "; Valid:", valid, "; Error:", error)
+        flowtime = compute_flowtime(solution, positions)
+    print("Success:", success, "; Valid:", valid, "; Error:", error, "; Time:", runtime, "; Flowtime:", flowtime)
 
     if draw_res:
         visualizer.draw(g, s, solution)
-    return len(a), success, valid, error
+    return len(a), success, valid, error, runtime, flowtime, makespan
 
 
 def __main__():
-    task_path = "../tasks/13_10_task.json"
-    draw_task = True
+    task_path = "../tasks/ccbs_roadmaps/dense/5_2_task.json"
+    draw_task = False
     timeout = 30
-    redirect_output = False
+    redirect_output = True
     save_log = False
     single_test(task_path, draw_task, timeout, redirect_output, save_log)
 
