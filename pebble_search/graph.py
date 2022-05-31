@@ -10,17 +10,21 @@ class Graph:
         self.curr_id = 0
         self.vertices = set()
         self.neighbours = dict()
-        self.positions = positions
+        self.positions = dict()
+
         self.edges = set()
         self.degreegeq3 = set()
 
         self.from_kd_ids = dict()
         self.to_kd_ids = dict()
-        kd_pos = np.zeros((len(self.positions), 2))
+        kd_pos = np.zeros((len(positions), 2))
 
         kd_id = 0
-        for v_id, pos in self.positions.items():
-            kd_pos[kd_id] = pos
+        # print("len: ", len(positions.items()))
+        for v_id, pos in positions.items():
+            self.positions[v_id] = np.array(pos)
+            # print(kd_id, np.array(pos))
+            kd_pos[kd_id] = np.array(pos)
             self.from_kd_ids[kd_id] = v_id
             self.to_kd_ids[v_id] = kd_id
             kd_id += 1

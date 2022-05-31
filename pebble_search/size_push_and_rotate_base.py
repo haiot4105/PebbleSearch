@@ -369,9 +369,10 @@ class SizePushAndRotateBase:
             exit()
 
         interfere_v = self.get_interfere_vertices(v_from, v_to)
-        if len(interfere_v) != 0:
-            print(self.debug_prefix,  "Error: collision", v_from, v_to)
-            exit(-10)
+        for v in interfere_v:
+            if v in self.occupied_vertices and v != v_from and v != v_to:
+                print(self.debug_prefix,  "Error: collision", v_from, v_to)
+                exit(-10)
         
         # if self.goals[agent] == v_from and v_from in self.reached_goals:
         #     print(self.debug_prefix,  "Alert! Agent ", agent, "moved from goal!")

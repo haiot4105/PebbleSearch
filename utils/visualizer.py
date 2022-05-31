@@ -9,7 +9,6 @@ import time
 fig = plt.figure()
 fig.set_dpi(100)
 fig.set_size_inches(10, 10)
-# ax = plt.axes(xlim=(-6, 6), ylim=(-6, 6))
 ax = plt.axes(xlim=(0, 256), ylim=(0, 256))
 anim = None
 

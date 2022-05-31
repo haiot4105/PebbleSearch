@@ -181,7 +181,7 @@ def read_task_from_xml(map_file, task_file):
         node_coord = np.array(list(map(float, node.find(prefix+"data").text.split(","))))
         all_neighbours[node_id] = set()
         positions[node_id] = node_coord
-        print(node_id, node_coord)
+        # print(node_id, node_coord)
 
     
     for edge in graph.findall(prefix+"edge"):
@@ -209,9 +209,7 @@ def read_task_from_xml(map_file, task_file):
     size = sqrt(2)/4
 
     return positions, all_neighbours, agents, starts, goals, size
-    
-    # <log>
-        # <summary time="0.0084526099999999993" flowtime="34.357036595661512" makespan="16.457818253324106"/>
+
 
 def read_xml_ccbs_results(result_file):
     tree = et.parse(result_file)
@@ -223,8 +221,3 @@ def read_xml_ccbs_results(result_file):
     makespan = float(summary.attrib.get("makespan"))
 
     return runtime, flowtime, makespan
-
-
-
-
-    

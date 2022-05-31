@@ -1,4 +1,3 @@
-import context
 import copy
 from .geom import dist_point_line_segment
 from pebble_search import Graph
@@ -20,8 +19,6 @@ def is_valid_solution(graph, agents, starts, goals, solution, size, check_size =
 	step = 0
 	for agent, v_from, v_to in solution:
 		step += 1
-		# print(step)
-		# print("\t(move) Agent:", agent, "from", v_from, "to", v_to)
 		if agents_positions[agent] != v_from:
 			print("Error: move from incorrect position!", agent, v_from, v_to)
 			return False
